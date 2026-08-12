@@ -1,0 +1,1 @@
+/home/ropel/shopify/skeleton-ext/AGENTS.md

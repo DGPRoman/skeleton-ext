@@ -21,7 +21,10 @@
     "hero_banner_kiT4fj": {
       "type": "hero-banner",
       "name": "Hero banner",
-      "settings": {}
+      "settings": {
+        "image": "shopify://shop_images/beach-sunset-thailand.jpg",
+        "image_mobile": "shopify://shop_images/beach-sunset-thailand.jpg"
+      }
     }
   },
   "order": [

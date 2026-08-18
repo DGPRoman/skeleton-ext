@@ -5,9 +5,19 @@
   {% content_for 'block', type: 'button', id: 'button' %}
 {% enddoc %}
 <a
+  class="button"
   {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %}
   {{ block.shopify_attributes }}
 >{{ block.settings.label }}</a>
+
+{% stylesheet %}
+  /* Override UA link styles so the block follows its container */
+  .button {
+    color: inherit;
+    text-decoration: none;
+  }
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": "Button",

@@ -13,10 +13,19 @@
   "sections": {
     "header": {
       "type": "header",
+      "settings": {
+        "menu": "",
+        "customer_account_menu": "customer-account-main-menu"
+      }
+    },
+    "hero_banner_kiT4fj": {
+      "type": "hero-banner",
+      "name": "Hero banner",
       "settings": {}
     }
   },
   "order": [
-    "header"
-  ],
+    "header",
+    "hero_banner_kiT4fj"
+  ]
 }

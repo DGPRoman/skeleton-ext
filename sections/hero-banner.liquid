@@ -1,0 +1,102 @@
+{% liquid
+  assign image = section.settings.image
+  assign image_mobile = section.settings.image_mobile | default: image
+  assign fetch_priority = 'auto'
+  if section.index == 1
+    assign fetch_priority = 'high'
+  endif
+%}
+
+<div class="hero full-width">
+    {% if image != blank %}
+        <picture>
+            <source
+                media="(max-width: 749px)"
+                srcset="{% render 'image-srcset', image: image_mobile, widths: '375, 550, 750, 1100, 1500', max: 1500 %}"
+                sizes="100vw"
+                width="{{ image_mobile.width }}"
+                height="{{ image_mobile.height }}"
+            >
+            <source
+                media="(min-width: 750px)"
+                srcset="{% render 'image-srcset', image: image, widths: '750, 1100, 1500, 2000, 2400, 3000', max: 3840 %}"
+                sizes="100vw"
+                width="{{ image.width }}"
+                height="{{ image.height }}"
+            >
+            <img
+                src="{{ image | image_url: width: 1500 }}"
+                alt="{{ image.alt | escape }}"
+                width="{{ image.width }}"
+                height="{{ image.height }}"
+                loading="eager"
+                fetchpriority="{{ fetch_priority }}"
+            >
+        </picture>
+    {% else %}
+        {{ 'hero-apparel-1' | placeholder_svg_tag: 'hero__placeholder' }}
+    {% endif %}
+    <div class="hero__content">
+        <div class="hero__inner">
+            {% content_for 'blocks' %}
+        </div>
+    </div>
+</div>
+
+{% stylesheet %}
+  .hero {
+    position: relative;
+  }
+
+  .hero picture,
+  .hero img,
+  .hero__placeholder {
+    width: 100%;
+  }
+
+  .hero__content {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: var(--content-grid);
+    align-items: end;
+    color: #fff;
+  }
+
+  .hero__inner {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding-block: var(--page-margin);
+  }
+
+  .hero__inner > * {
+    max-width: 40ch;
+  }
+
+  /* Breakpoint pairs with the <source media> queries above */
+  @media (min-width: 750px) {
+    .hero__content {
+      align-items: center;
+    }
+
+    .hero__inner {
+      max-width: 50%;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Hero banner",
+  "tag": "section",
+  "blocks": [{"type": "button"}],
+  "settings": [
+    {"type": "image_picker", "id": "image", "label": "t:labels.background"},
+    {"type": "image_picker", "id": "image_mobile", "label": "t:labels.background_mobile"}
+  ],
+  "presets": [{"name": "Hero banner"}]
+}
+{% endschema %}

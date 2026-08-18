@@ -17,18 +17,9 @@
         "menu": "",
         "customer_account_menu": "customer-account-main-menu"
       }
-    },
-    "hero_banner_kiT4fj": {
-      "type": "hero-banner",
-      "name": "Hero banner",
-      "settings": {
-        "image": "shopify://shop_images/beach-sunset-thailand.jpg",
-        "image_mobile": "shopify://shop_images/makeup-brush-set.jpg"
-      }
     }
   },
   "order": [
-    "header",
-    "hero_banner_kiT4fj"
+    "header"
   ]
 }

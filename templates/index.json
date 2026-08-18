@@ -16,9 +16,15 @@
         "grid_item_width": "collections--full",
         "grid_gap": 10
       }
+    },
+    "hero_banner_JEctQn": {
+      "type": "hero-banner",
+      "name": "Hero banner",
+      "settings": {}
     }
   },
   "order": [
-    "collections_cYLt9E"
+    "collections_cYLt9E",
+    "hero_banner_JEctQn"
   ]
 }

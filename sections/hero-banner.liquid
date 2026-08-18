@@ -1,0 +1,15 @@
+<div class="hero full-width">
+    <div class="hero__content">
+        {% content_for 'blocks' %}
+    </div>
+</div>
+
+{% schema %}
+{
+  "name": "Hero banner",
+  "tag": "section",
+  "blocks": [{"type": "button"}],
+  "settings": [],
+  "presets": [{"name": "Hero banner"}]
+}
+{% endschema %}

@@ -1,0 +1,21 @@
+{% doc %}
+  Renders a srcset value for an image, capped so image_url stays in range.
+
+  @param {image} image - The image to build candidates for
+  @param {string} widths - Comma-separated candidate widths
+  @param {number} max - Largest width to request (image_url caps at 5760)
+
+  @example
+  <source srcset="{% render 'image-srcset', image: section.settings.image, widths: '750, 1500', max: 3840 %}">
+{% enddoc %}
+{%- liquid
+  assign max_width = image.width | at_most: max
+  assign candidates = widths | split: ', '
+-%}
+{%- for candidate in candidates -%}
+  {%- assign width = candidate | times: 1 -%}
+  {%- if width < max_width -%}
+    {{ image | image_url: width: width }} {{ width }}w,
+  {%- endif -%}
+{%- endfor -%}
+{{ image | image_url: width: max_width }} {{ max_width }}w

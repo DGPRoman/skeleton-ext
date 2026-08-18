@@ -1,50 +1,25 @@
 {% liquid
   assign image = section.settings.image
   assign image_mobile = section.settings.image_mobile | default: image
-  # image_url caps width at 5760px
-  assign max_mobile = image_mobile.width | at_most: 1500
-  assign max_desktop = image.width | at_most: 3840
-  assign mobile_widths = '375, 550, 750, 1100, 1500' | split: ', '
-  assign desktop_widths = '750, 1100, 1500, 2000, 2400, 3000' | split: ', '
   assign fetch_priority = 'auto'
   if section.index == 1
     assign fetch_priority = 'high'
   endif
 %}
 
-{%- capture srcset_mobile -%}
-  {%- for w in mobile_widths -%}
-    {%- assign width = w | times: 1 -%}
-    {%- if width < max_mobile -%}
-      {{ image_mobile | image_url: width: width }} {{ width }}w,
-    {%- endif -%}
-  {%- endfor -%}
-  {{ image_mobile | image_url: width: max_mobile }} {{ max_mobile }}w
-{%- endcapture -%}
-
-{%- capture srcset_desktop -%}
-  {%- for w in desktop_widths -%}
-    {%- assign width = w | times: 1 -%}
-    {%- if width < max_desktop -%}
-      {{ image | image_url: width: width }} {{ width }}w,
-    {%- endif -%}
-  {%- endfor -%}
-  {{ image | image_url: width: max_desktop }} {{ max_desktop }}w
-{%- endcapture -%}
-
 <div class="hero full-width">
     {% if image != blank %}
         <picture>
             <source
                 media="(max-width: 749px)"
-                srcset="{{ srcset_mobile }}"
+                srcset="{% render 'image-srcset', image: image_mobile, widths: '375, 550, 750, 1100, 1500', max: 1500 %}"
                 sizes="100vw"
                 width="{{ image_mobile.width }}"
                 height="{{ image_mobile.height }}"
             >
             <source
                 media="(min-width: 750px)"
-                srcset="{{ srcset_desktop }}"
+                srcset="{% render 'image-srcset', image: image, widths: '750, 1100, 1500, 2000, 2400, 3000', max: 3840 %}"
                 sizes="100vw"
                 width="{{ image.width }}"
                 height="{{ image.height }}"

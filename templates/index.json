@@ -20,11 +20,14 @@
     "hero_banner_JEctQn": {
       "type": "hero-banner",
       "name": "Hero banner",
-      "settings": {}
+      "settings": {
+        "image": "shopify://shop_images/fog-on-dark-waters-edge.jpg",
+        "image_mobile": "shopify://shop_images/fog-on-dark-waters-edge.jpg"
+      }
     }
   },
   "order": [
-    "collections_cYLt9E",
-    "hero_banner_JEctQn"
+    "hero_banner_JEctQn",
+    "collections_cYLt9E"
   ]
 }

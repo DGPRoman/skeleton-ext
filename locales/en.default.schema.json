@@ -36,6 +36,7 @@
   "labels": {
     "alignment": "Alignment",
     "background": "Background",
+    "background_mobile": "Background mobile",
     "foreground": "Foreground",
     "grid_gap": "Grid spacing",
     "grid_item_width": "Grid item width",

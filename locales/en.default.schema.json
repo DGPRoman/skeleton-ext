@@ -49,6 +49,8 @@
     "foreground": "Foreground",
     "grid_gap": "Grid spacing",
     "grid_item_width": "Grid item width",
+    "height": "Height",
+    "image_description": "Image description",
     "input_corner_radius": "Input corner radius",
     "layout_direction": "Layout direction",
     "link": "Link",
@@ -70,6 +72,12 @@
     "direction": {
       "horizontal": "Horizontal",
       "vertical": "Vertical"
+    },
+    "height": {
+      "adapt": "Adapt to image",
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large"
     },
     "page_width": {
       "narrow": "Narrow",

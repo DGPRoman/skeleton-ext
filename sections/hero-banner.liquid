@@ -1,89 +1,112 @@
 {% liquid
-  assign image = section.settings.image
-  assign image_mobile = section.settings.image_mobile | default: image
+  assign image = section.settings.image | default: section.settings.image_mobile
+  assign image_mobile = section.settings.image_mobile | default: section.settings.image
+  assign alt = section.settings.alt | default: image.alt
+
+  assign wrapper = 'div'
+  if section.settings.link != blank
+    assign wrapper = 'a'
+  endif
+
   assign fetch_priority = 'auto'
   if section.index == 1
     assign fetch_priority = 'high'
   endif
 %}
 
-<div class="hero full-width">
-    {% if image != blank %}
-        <picture>
-            <source
-                media="(max-width: 749px)"
-                srcset="{% render 'image-srcset', image: image_mobile, widths: '375, 550, 750, 1100, 1500', max: 1500 %}"
-                sizes="100vw"
-                width="{{ image_mobile.width }}"
-                height="{{ image_mobile.height }}"
-            >
-            <source
-                media="(min-width: 750px)"
-                srcset="{% render 'image-srcset', image: image, widths: '750, 1100, 1500, 2000, 2400, 3000', max: 3840 %}"
-                sizes="100vw"
-                width="{{ image.width }}"
-                height="{{ image.height }}"
-            >
-            <img
-                src="{{ image | image_url: width: 1500 }}"
-                alt="{{ image.alt | escape }}"
-                width="{{ image.width }}"
-                height="{{ image.height }}"
-                loading="eager"
-                fetchpriority="{{ fetch_priority }}"
-            >
-        </picture>
-    {% else %}
-        {{ 'hero-apparel-1' | placeholder_svg_tag: 'hero__placeholder' }}
+{% if image != blank or request.design_mode %}
+  <{{ wrapper }}
+    class="hero {{ section.settings.height }} full-width"
+    {% if wrapper == 'a' %}
+      href="{{ section.settings.link }}"
     {% endif %}
-    <div class="hero__content">
-        <div class="hero__inner">
-            {% content_for 'blocks' %}
-        </div>
-    </div>
-</div>
+  >
+    {% if image != blank %}
+      <picture>
+        <source
+          media="(max-width: 749px)"
+          srcset="{% render 'image-srcset', image: image_mobile, widths: '375, 550, 750, 1100, 1500', max: 1500 %}"
+          sizes="100vw"
+          width="{{ image_mobile.width }}"
+          height="{{ image_mobile.height }}"
+        >
+        <source
+          media="(min-width: 750px)"
+          srcset="{% render 'image-srcset', image: image, widths: '750, 1100, 1500, 2000, 2400, 3000', max: 3840 %}"
+          sizes="100vw"
+          width="{{ image.width }}"
+          height="{{ image.height }}"
+        >
+        <img
+          src="{{ image | image_url: width: 1500 }}"
+          alt="{{ alt | escape }}"
+          width="{{ image.width }}"
+          height="{{ image.height }}"
+          loading="eager"
+          fetchpriority="{{ fetch_priority }}"
+        >
+      </picture>
+    {% else %}
+      {{ 'hero-apparel-1' | placeholder_svg_tag: 'hero__placeholder' }}
+    {% endif %}
+  </{{ wrapper }}>
+{% endif %}
 
 {% stylesheet %}
   .hero {
+    display: block;
     position: relative;
+    aspect-ratio: var(--hero-ratio, auto);
+  }
+
+  .hero:focus-visible {
+    /* Negative offset keeps the ring inside a full-bleed banner */
+    outline: 2px solid currentcolor;
+    outline-offset: -4px;
   }
 
   .hero picture,
   .hero img,
   .hero__placeholder {
     width: 100%;
+    height: 100%;
   }
 
-  .hero__content {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    grid-template-columns: var(--content-grid);
-    align-items: end;
-    color: #fff;
+  .hero img {
+    object-fit: cover;
   }
 
-  .hero__inner {
-    grid-column: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-    padding-block: var(--page-margin);
+  /* Without a ratio the image keeps its own proportions */
+  .hero--adapt picture,
+  .hero--adapt img,
+  .hero--adapt .hero__placeholder {
+    height: auto;
   }
 
-  .hero__inner > * {
-    max-width: 40ch;
+  /* Ratios pair with the <source media> queries above */
+  .hero--small {
+    --hero-ratio: 4 / 3;
   }
 
-  /* Breakpoint pairs with the <source media> queries above */
+  .hero--medium {
+    --hero-ratio: 1 / 1;
+  }
+
+  .hero--large {
+    --hero-ratio: 3 / 4;
+  }
+
   @media (min-width: 750px) {
-    .hero__content {
-      align-items: center;
+    .hero--small {
+      --hero-ratio: 3 / 1;
     }
 
-    .hero__inner {
-      max-width: 50%;
+    .hero--medium {
+      --hero-ratio: 2 / 1;
+    }
+
+    .hero--large {
+      --hero-ratio: 3 / 2;
     }
   }
 {% endstylesheet %}
@@ -92,10 +115,23 @@
 {
   "name": "Hero banner",
   "tag": "section",
-  "blocks": [{"type": "button"}],
   "settings": [
     {"type": "image_picker", "id": "image", "label": "t:labels.background"},
-    {"type": "image_picker", "id": "image_mobile", "label": "t:labels.background_mobile"}
+    {"type": "image_picker", "id": "image_mobile", "label": "t:labels.background_mobile"},
+    {"type": "text", "id": "alt", "label": "t:labels.image_description"},
+    {"type": "url", "id": "link", "label": "t:labels.link"},
+    {
+      "type": "select",
+      "id": "height",
+      "label": "t:labels.height",
+      "default": "hero--adapt",
+      "options": [
+        {"value": "hero--adapt", "label": "t:options.height.adapt"},
+        {"value": "hero--small", "label": "t:options.height.small"},
+        {"value": "hero--medium", "label": "t:options.height.medium"},
+        {"value": "hero--large", "label": "t:options.height.large"}
+      ]
+    }
   ],
   "presets": [{"name": "Hero banner"}]
 }

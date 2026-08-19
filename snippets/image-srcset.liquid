@@ -10,10 +10,10 @@
 {% enddoc %}
 {%- liquid
   assign max_width = image.width | at_most: max
-  assign candidates = widths | split: ', '
+  assign candidates = widths | split: ','
 -%}
 {%- for candidate in candidates -%}
-  {%- assign width = candidate | times: 1 -%}
+  {%- assign width = candidate | strip | times: 1 -%}
   {%- if width < max_width -%}
     {{ image | image_url: width: width }} {{ width }}w,
   {%- endif -%}

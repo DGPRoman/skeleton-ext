@@ -36,11 +36,6 @@
     {% else %}
         {{ 'hero-apparel-1' | placeholder_svg_tag: 'hero__placeholder' }}
     {% endif %}
-    <div class="hero__content">
-        <div class="hero__inner">
-            {% content_for 'blocks' %}
-        </div>
-    </div>
 </div>
 
 {% stylesheet %}
@@ -53,46 +48,12 @@
   .hero__placeholder {
     width: 100%;
   }
-
-  .hero__content {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    grid-template-columns: var(--content-grid);
-    align-items: end;
-    color: #fff;
-  }
-
-  .hero__inner {
-    grid-column: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-    padding-block: var(--page-margin);
-  }
-
-  .hero__inner > * {
-    max-width: 40ch;
-  }
-
-  /* Breakpoint pairs with the <source media> queries above */
-  @media (min-width: 750px) {
-    .hero__content {
-      align-items: center;
-    }
-
-    .hero__inner {
-      max-width: 50%;
-    }
-  }
 {% endstylesheet %}
 
 {% schema %}
 {
   "name": "Hero banner",
   "tag": "section",
-  "blocks": [{"type": "button"}],
   "settings": [
     {"type": "image_picker", "id": "image", "label": "t:labels.background"},
     {"type": "image_picker", "id": "image_mobile", "label": "t:labels.background_mobile"}

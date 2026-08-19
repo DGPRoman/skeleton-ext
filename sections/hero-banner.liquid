@@ -19,6 +19,10 @@
     class="hero {{ section.settings.height }} full-width"
     {% if wrapper == 'a' %}
       href="{{ section.settings.link }}"
+      {% comment %} A linked image is the whole link, so it must carry a name {% endcomment %}
+      {% if alt == blank %}
+        aria-label="{{ 'hero_banner.link_label' | t | escape }}"
+      {% endif %}
     {% endif %}
   >
     {% if image != blank %}

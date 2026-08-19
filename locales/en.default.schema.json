@@ -49,6 +49,7 @@
     "foreground": "Foreground",
     "grid_gap": "Grid spacing",
     "grid_item_width": "Grid item width",
+    "image_description": "Image description",
     "input_corner_radius": "Input corner radius",
     "layout_direction": "Layout direction",
     "link": "Link",

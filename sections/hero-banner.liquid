@@ -1,6 +1,12 @@
 {% liquid
   assign image = section.settings.image | default: section.settings.image_mobile
   assign image_mobile = section.settings.image_mobile | default: section.settings.image
+  assign alt = section.settings.alt | default: image.alt
+
+  assign wrapper = 'div'
+  if section.settings.link != blank
+    assign wrapper = 'a'
+  endif
 
   assign fetch_priority = 'auto'
   if section.index == 1
@@ -9,7 +15,12 @@
 %}
 
 {% if image != blank or request.design_mode %}
-  <div class="hero full-width">
+  <{{ wrapper }}
+    class="hero full-width"
+    {% if wrapper == 'a' %}
+      href="{{ section.settings.link }}"
+    {% endif %}
+  >
     {% if image != blank %}
       <picture>
         <source
@@ -28,7 +39,7 @@
         >
         <img
           src="{{ image | image_url: width: 1500 }}"
-          alt="{{ image.alt | escape }}"
+          alt="{{ alt | escape }}"
           width="{{ image.width }}"
           height="{{ image.height }}"
           loading="eager"
@@ -38,12 +49,19 @@
     {% else %}
       {{ 'hero-apparel-1' | placeholder_svg_tag: 'hero__placeholder' }}
     {% endif %}
-  </div>
+  </{{ wrapper }}>
 {% endif %}
 
 {% stylesheet %}
   .hero {
+    display: block;
     position: relative;
+  }
+
+  .hero:focus-visible {
+    /* Negative offset keeps the ring inside a full-bleed banner */
+    outline: 2px solid currentcolor;
+    outline-offset: -4px;
   }
 
   .hero picture,
@@ -59,7 +77,9 @@
   "tag": "section",
   "settings": [
     {"type": "image_picker", "id": "image", "label": "t:labels.background"},
-    {"type": "image_picker", "id": "image_mobile", "label": "t:labels.background_mobile"}
+    {"type": "image_picker", "id": "image_mobile", "label": "t:labels.background_mobile"},
+    {"type": "text", "id": "alt", "label": "t:labels.image_description"},
+    {"type": "url", "id": "link", "label": "t:labels.link"}
   ],
   "presets": [{"name": "Hero banner"}]
 }

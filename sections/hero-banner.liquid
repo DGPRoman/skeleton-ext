@@ -8,6 +8,21 @@
     assign wrapper = 'a'
   endif
 
+  # Box ratios pair with the --hero-ratio classes below; 0 means no crop
+  assign mobile_ratio = 0
+  assign desktop_ratio = 0
+  case section.settings.height
+    when 'hero--small'
+      assign mobile_ratio = 1.3333
+      assign desktop_ratio = 3.0
+    when 'hero--medium'
+      assign mobile_ratio = 1.0
+      assign desktop_ratio = 2.0
+    when 'hero--large'
+      assign mobile_ratio = 0.75
+      assign desktop_ratio = 1.5
+  endcase
+
   assign fetch_priority = 'auto'
   if section.index == 1
     assign fetch_priority = 'high'
@@ -17,6 +32,10 @@
 {% if image != blank or request.design_mode %}
   <{{ wrapper }}
     class="hero {{ section.settings.height }} full-width"
+    style="
+      --hero-position: {{ image.presentation.focal_point | default: '50% 50%' }};
+      --hero-position-mobile: {{ image_mobile.presentation.focal_point | default: '50% 50%' }};
+    "
     {% if wrapper == 'a' %}
       href="{{ section.settings.link }}"
       {% comment %} A linked image is the whole link, so it must carry a name {% endcomment %}
@@ -29,15 +48,15 @@
       <picture>
         <source
           media="(max-width: 749px)"
-          srcset="{% render 'image-srcset', image: image_mobile, widths: '375, 550, 750, 1100, 1500', max: 1500 %}"
-          sizes="100vw"
+          srcset="{% render 'image-srcset', image: image_mobile, widths: '375, 550, 750, 1100, 1500, 2000, 2600', max: 3000 %}"
+          sizes="{% render 'image-sizes', image: image_mobile, ratio: mobile_ratio %}"
           width="{{ image_mobile.width }}"
           height="{{ image_mobile.height }}"
         >
         <source
           media="(min-width: 750px)"
           srcset="{% render 'image-srcset', image: image, widths: '750, 1100, 1500, 2000, 2400, 3000', max: 3840 %}"
-          sizes="100vw"
+          sizes="{% render 'image-sizes', image: image, ratio: desktop_ratio %}"
           width="{{ image.width }}"
           height="{{ image.height }}"
         >
@@ -78,6 +97,17 @@
     border: 3px solid #000;
   }
 
+  /* Author colours are discarded here, system colours are not, so name two */
+  @media (forced-colors: active) {
+    .hero:focus-visible {
+      outline-color: Highlight;
+    }
+
+    .hero:focus-visible::after {
+      border-color: Canvas;
+    }
+  }
+
   .hero picture,
   .hero img,
   .hero__placeholder {
@@ -85,8 +115,10 @@
     height: 100%;
   }
 
+  /* The crop honours the merchant's focal point, one per art-directed file */
   .hero img {
     object-fit: cover;
+    object-position: var(--hero-position-mobile);
   }
 
   /* Without a ratio the image keeps its own proportions */
@@ -110,6 +142,10 @@
   }
 
   @media (min-width: 750px) {
+    .hero img {
+      object-position: var(--hero-position);
+    }
+
     .hero--small {
       --hero-ratio: 3 / 1;
     }

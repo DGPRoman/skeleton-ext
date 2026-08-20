@@ -17,6 +17,10 @@
 {% if image != blank or request.design_mode %}
   <{{ wrapper }}
     class="hero {{ section.settings.height }} full-width"
+    style="
+      --hero-position: {{ image.presentation.focal_point | default: '50% 50%' }};
+      --hero-position-mobile: {{ image_mobile.presentation.focal_point | default: '50% 50%' }};
+    "
     {% if wrapper == 'a' %}
       href="{{ section.settings.link }}"
       {% comment %} A linked image is the whole link, so it must carry a name {% endcomment %}
@@ -85,8 +89,10 @@
     height: 100%;
   }
 
+  /* The crop honours the merchant's focal point, one per art-directed file */
   .hero img {
     object-fit: cover;
+    object-position: var(--hero-position-mobile);
   }
 
   /* Without a ratio the image keeps its own proportions */
@@ -110,6 +116,10 @@
   }
 
   @media (min-width: 750px) {
+    .hero img {
+      object-position: var(--hero-position);
+    }
+
     .hero--small {
       --hero-ratio: 3 / 1;
     }

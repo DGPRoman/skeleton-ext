@@ -97,6 +97,17 @@
     border: 3px solid #000;
   }
 
+  /* Author colours are discarded here, system colours are not, so name two */
+  @media (forced-colors: active) {
+    .hero:focus-visible {
+      outline-color: Highlight;
+    }
+
+    .hero:focus-visible::after {
+      border-color: Canvas;
+    }
+  }
+
   .hero picture,
   .hero img,
   .hero__placeholder {

@@ -1,0 +1,22 @@
+{% doc %}
+  Renders a sizes value for a full-width image cropped with object-fit: cover.
+
+  When the file is wider than the box, cover paints it wider than the box, so
+  the browser has to be told to pick a larger candidate than 100vw.
+
+  @param {image} image - The image that will be cropped
+  @param {number} ratio - Width over height of the box, or 0 when the box takes the image's own ratio
+
+  @example
+  <source sizes="{% render 'image-sizes', image: section.settings.image, ratio: 2.0 %}">
+{% enddoc %}
+{%- liquid
+  assign width = 100
+  if ratio > 0
+    assign image_ratio = image.width | times: 1.0 | divided_by: image.height
+    if image_ratio > ratio
+      assign width = image_ratio | divided_by: ratio | times: 100 | round
+    endif
+  endif
+  echo width | append: 'vw'
+-%}

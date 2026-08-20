@@ -8,6 +8,21 @@
     assign wrapper = 'a'
   endif
 
+  # Box ratios pair with the --hero-ratio classes below; 0 means no crop
+  assign mobile_ratio = 0
+  assign desktop_ratio = 0
+  case section.settings.height
+    when 'hero--small'
+      assign mobile_ratio = 1.3333
+      assign desktop_ratio = 3.0
+    when 'hero--medium'
+      assign mobile_ratio = 1.0
+      assign desktop_ratio = 2.0
+    when 'hero--large'
+      assign mobile_ratio = 0.75
+      assign desktop_ratio = 1.5
+  endcase
+
   assign fetch_priority = 'auto'
   if section.index == 1
     assign fetch_priority = 'high'
@@ -33,15 +48,15 @@
       <picture>
         <source
           media="(max-width: 749px)"
-          srcset="{% render 'image-srcset', image: image_mobile, widths: '375, 550, 750, 1100, 1500', max: 1500 %}"
-          sizes="100vw"
+          srcset="{% render 'image-srcset', image: image_mobile, widths: '375, 550, 750, 1100, 1500, 2000, 2600', max: 3000 %}"
+          sizes="{% render 'image-sizes', image: image_mobile, ratio: mobile_ratio %}"
           width="{{ image_mobile.width }}"
           height="{{ image_mobile.height }}"
         >
         <source
           media="(min-width: 750px)"
           srcset="{% render 'image-srcset', image: image, widths: '750, 1100, 1500, 2000, 2400, 3000', max: 3840 %}"
-          sizes="100vw"
+          sizes="{% render 'image-sizes', image: image, ratio: desktop_ratio %}"
           width="{{ image.width }}"
           height="{{ image.height }}"
         >

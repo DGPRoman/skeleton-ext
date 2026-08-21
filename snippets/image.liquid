@@ -13,6 +13,7 @@
   @param {number} [width] - The highest resolution width of the image to be rendered
   @param {number} [height] - The highest resolution height of the image to be rendered
   @param {string} [crop] - The crop position of the image
+  @param {string} [loading] - Loading attribute; defaults to 'eager', pass 'lazy' for anything below the fold
 
   @example
   {% render 'image', image: product.featured_image %}
@@ -32,6 +33,8 @@
     assign width = width | default: image.width
   endunless
 
+  assign loading = loading | default: 'eager'
+
   if url
     assign wrapper = 'a'
   else
@@ -45,7 +48,7 @@
     href="{{ url }}"
   {% endif %}
 >
-  {{ image | image_url: width: width, height: height, crop: crop | image_tag }}
+  {{ image | image_url: width: width, height: height, crop: crop | image_tag: loading: loading }}
 </{{ wrapper }}>
 
 {% stylesheet %}

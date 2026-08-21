@@ -1,0 +1,21 @@
+{% doc %}
+  Renders the accessibility attributes every carousel in the theme hands to
+  Swiper, so its announcements are translated rather than English defaults.
+
+  Swiper interpolates its own tokens into these messages, and those tokens are
+  assembled from pieces here: Liquid closes an output tag at the first }} it
+  meets, so braces written inline would cut the expression in half. This is the
+  one place that has to know about it.
+
+  Meant to be rendered inside the opening <swiper-container> tag.
+
+  @example
+  <swiper-container {% render 'carousel-a11y' %}>
+{% enddoc %}
+{%- liquid
+  assign index = '{{' | append: 'index' | append: '}}'
+  assign total = '{{' | append: 'slidesLength' | append: '}}'
+-%}
+a11y-container-role-description-message="{{ 'carousel.role' | t | escape }}"
+a11y-item-role-description-message="{{ 'carousel.slide_role' | t | escape }}"
+a11y-slide-label-message="{{ 'carousel.position' | t: index: index, count: total | escape }}"

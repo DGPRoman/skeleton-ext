@@ -1,1 +1,4 @@
 *.json linguist-language=jsonc
+
+# Vendored third-party bundle: keep it out of diffs and language stats
+assets/swiper-element-bundle.min.js -diff linguist-vendored

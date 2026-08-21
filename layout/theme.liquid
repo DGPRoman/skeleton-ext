@@ -20,6 +20,13 @@
     {% # Load and preload the critical CSS %}
     {{ 'critical.css' | asset_url | stylesheet_tag: preload: true }}
 
+    {% comment %}
+      Slider engine, shared by every carousel section. Registers the
+      <swiper-container> and <swiper-slide> custom elements; its CSS ships
+      inside the bundle, so there is no stylesheet to load alongside it.
+    {% endcomment %}
+    <script src="{{ 'swiper-element-bundle.min.js' | asset_url }}" defer></script>
+
     {% # Social, title, etc. %}
     {% render 'meta-tags' %}
 

@@ -9,20 +9,23 @@
  */
 {
   "sections": {
+    "hero_banner_JEctQn": {
+      "type": "hero-banner",
+      "name": "Hero banner",
+      "settings": {
+        "image": "shopify://shop_images/hero-desktop-1.jpg",
+        "image_mobile": "shopify://shop_images/hero-mobile-1.jpg",
+        "alt": "",
+        "link": "",
+        "height": "hero--adapt"
+      }
+    },
     "collections_cYLt9E": {
       "type": "collections",
       "name": "t:general.collections_grid",
       "settings": {
         "grid_item_width": "collections--full",
         "grid_gap": 10
-      }
-    },
-    "hero_banner_JEctQn": {
-      "type": "hero-banner",
-      "name": "Hero banner",
-      "settings": {
-        "image": "shopify://shop_images/fog-on-dark-waters-edge.jpg",
-        "image_mobile": "shopify://shop_images/fog-on-dark-waters-edge.jpg"
       }
     }
   },

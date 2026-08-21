@@ -1,27 +1,11 @@
 {% liquid
   assign count = section.blocks.size
 
-  # Box ratios pair with the --slideshow-ratio classes below. Every slide crops
-  # to the same box, so a fade never changes the height of the banner.
-  assign mobile_ratio = 1.0
-  assign desktop_ratio = 2.0
-  case section.settings.height
-    when 'slideshow--small'
-      assign mobile_ratio = 1.3333
-      assign desktop_ratio = 3.0
-    when 'slideshow--large'
-      assign mobile_ratio = 0.75
-      assign desktop_ratio = 1.5
-  endcase
-
-  # A single slide is a banner, not a slideshow: nothing to rotate or point at
+  # A single slide is a banner, not a slideshow: nothing to rotate
   assign autoplay = false
-  if count > 1
-    if section.settings.autoplay
-      assign autoplay = true
-    endif
+  if count > 1 and section.settings.autoplay
+    assign autoplay = true
   endif
-
 %}
 
 {% if count > 0 %}
@@ -31,7 +15,7 @@
     where it never reaches the element carrying the name.
   {% endcomment %}
   <theme-slideshow
-    class="slideshow {{ section.settings.height }} full-width"
+    class="slideshow {{ section.settings.shape }} full-width"
     role="region"
     aria-roledescription="{{ 'carousel.role' | t | escape }}"
     aria-label="{{ 'slideshow.label' | t | escape }}"
@@ -82,7 +66,7 @@
         >
           {%- if block.settings.link != blank -%}
             <a
-              class="slideshow__link"
+              class="slideshow__link banner-link"
               href="{{ block.settings.link }}"
               {% comment %} A linked image is the whole link, so it must carry a name {% endcomment %}
               {% if alt == blank %}
@@ -98,8 +82,7 @@
             image: block.settings.image,
             image_mobile: block.settings.image_mobile,
             alt: block.settings.alt,
-            mobile_ratio: mobile_ratio,
-            desktop_ratio: desktop_ratio,
+            shape: section.settings.shape,
             loading: loading,
             fetch_priority: fetch_priority,
             placeholder: placeholder
@@ -140,12 +123,14 @@
     position: relative;
   }
 
-  /* The width is spelled out: a ratio alone gives the element no intrinsic
-     width, and it would collapse to nothing in a content-sized column. */
+  /* The box is the carousel rather than the host, so the crossfade happens
+     inside a shape that never changes. The width is spelled out: a ratio alone
+     gives the element no intrinsic width, and it would collapse to nothing in a
+     content-sized column. */
   .slideshow__swiper {
     display: block;
     width: 100%;
-    aspect-ratio: var(--slideshow-ratio);
+    aspect-ratio: var(--banner-ratio);
   }
 
   /* Before the engine upgrades the element, its children are plain unknown tags:
@@ -170,26 +155,10 @@
     height: 100%;
   }
 
+  /* banner-link brings the block, the position and the focus ring with it */
   .slideshow__link {
-    display: block;
-    position: relative;
     width: 100%;
     height: 100%;
-  }
-
-  /* Two tones, so one of them always contrasts with the photo underneath.
-     Both are drawn inside, because a full-bleed slide has no outside. */
-  .slideshow__link:focus-visible {
-    outline: 3px solid #fff;
-    outline-offset: -3px;
-  }
-
-  /* A pseudo-element, not an inset shadow: the image would cover the shadow */
-  .slideshow__link:focus-visible::after {
-    content: '';
-    position: absolute;
-    inset: 3px;
-    border: 3px solid #000;
   }
 
   .slideshow__pause {
@@ -253,42 +222,10 @@
     box-shadow: 0 0 0 4px #fff;
   }
 
-  /* Author colours are discarded here, system colours are not, so name them */
+  /* Author colours are discarded here, system colours are not, so name one */
   @media (forced-colors: active) {
-    .slideshow__link:focus-visible,
     .slideshow__pause:focus-visible {
       outline-color: Highlight;
-    }
-
-    .slideshow__link:focus-visible::after {
-      border-color: Canvas;
-    }
-  }
-
-  /* Ratios pair with the <source media> queries above */
-  .slideshow--small {
-    --slideshow-ratio: 4 / 3;
-  }
-
-  .slideshow--medium {
-    --slideshow-ratio: 1 / 1;
-  }
-
-  .slideshow--large {
-    --slideshow-ratio: 3 / 4;
-  }
-
-  @media (min-width: 750px) {
-    .slideshow--small {
-      --slideshow-ratio: 3 / 1;
-    }
-
-    .slideshow--medium {
-      --slideshow-ratio: 2 / 1;
-    }
-
-    .slideshow--large {
-      --slideshow-ratio: 3 / 2;
     }
   }
 {% endstylesheet %}
@@ -427,13 +364,13 @@
   "settings": [
     {
       "type": "select",
-      "id": "height",
+      "id": "shape",
       "label": "t:labels.height",
-      "default": "slideshow--medium",
+      "default": "banner--medium",
       "options": [
-        {"value": "slideshow--small", "label": "t:options.height.small"},
-        {"value": "slideshow--medium", "label": "t:options.height.medium"},
-        {"value": "slideshow--large", "label": "t:options.height.large"}
+        {"value": "banner--small", "label": "t:options.height.small"},
+        {"value": "banner--medium", "label": "t:options.height.medium"},
+        {"value": "banner--large", "label": "t:options.height.large"}
       ]
     },
     {"type": "checkbox", "id": "autoplay", "label": "t:labels.autoplay", "default": true},

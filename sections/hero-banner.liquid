@@ -7,21 +7,6 @@
     assign wrapper = 'a'
   endif
 
-  # Box ratios pair with the --hero-ratio classes below; 0 means no crop
-  assign mobile_ratio = 0
-  assign desktop_ratio = 0
-  case section.settings.height
-    when 'hero--small'
-      assign mobile_ratio = 1.3333
-      assign desktop_ratio = 3.0
-    when 'hero--medium'
-      assign mobile_ratio = 1.0
-      assign desktop_ratio = 2.0
-    when 'hero--large'
-      assign mobile_ratio = 0.75
-      assign desktop_ratio = 1.5
-  endcase
-
   assign fetch_priority = 'auto'
   if section.index == 1
     assign fetch_priority = 'high'
@@ -30,7 +15,7 @@
 
 {% if image != blank or request.design_mode %}
   <{{ wrapper }}
-    class="hero {{ section.settings.height }} full-width"
+    class="hero banner {{ section.settings.shape }} full-width{% if wrapper == 'a' %} banner-link{% endif %}"
     {% if wrapper == 'a' %}
       href="{{ section.settings.link }}"
       {% comment %} A linked image is the whole link, so it must carry a name {% endcomment %}
@@ -43,81 +28,12 @@
       image: section.settings.image,
       image_mobile: section.settings.image_mobile,
       alt: section.settings.alt,
-      mobile_ratio: mobile_ratio,
-      desktop_ratio: desktop_ratio,
+      shape: section.settings.shape,
       loading: 'eager',
       fetch_priority: fetch_priority
     %}
   </{{ wrapper }}>
 {% endif %}
-
-{% stylesheet %}
-  .hero {
-    display: block;
-    position: relative;
-    aspect-ratio: var(--hero-ratio, auto);
-  }
-
-  /* Two tones, so one of them always contrasts with the photo underneath.
-     Both are drawn inside, because a full-bleed banner has no outside. */
-  .hero:focus-visible {
-    outline: 3px solid #fff;
-    outline-offset: -3px;
-  }
-
-  /* A pseudo-element, not an inset shadow: the image would cover the shadow */
-  .hero:focus-visible::after {
-    content: '';
-    position: absolute;
-    inset: 3px;
-    border: 3px solid #000;
-  }
-
-  /* Author colours are discarded here, system colours are not, so name two */
-  @media (forced-colors: active) {
-    .hero:focus-visible {
-      outline-color: Highlight;
-    }
-
-    .hero:focus-visible::after {
-      border-color: Canvas;
-    }
-  }
-
-  /* Without a ratio the image keeps its own proportions */
-  .hero--adapt .image-cover,
-  .hero--adapt .image-cover img,
-  .hero--adapt .image-cover__placeholder {
-    height: auto;
-  }
-
-  /* Ratios pair with the <source media> queries above */
-  .hero--small {
-    --hero-ratio: 4 / 3;
-  }
-
-  .hero--medium {
-    --hero-ratio: 1 / 1;
-  }
-
-  .hero--large {
-    --hero-ratio: 3 / 4;
-  }
-
-  @media (min-width: 750px) {
-    .hero--small {
-      --hero-ratio: 3 / 1;
-    }
-
-    .hero--medium {
-      --hero-ratio: 2 / 1;
-    }
-
-    .hero--large {
-      --hero-ratio: 3 / 2;
-    }
-  }
-{% endstylesheet %}
 
 {% schema %}
 {
@@ -130,14 +46,14 @@
     {"type": "url", "id": "link", "label": "t:labels.link"},
     {
       "type": "select",
-      "id": "height",
+      "id": "shape",
       "label": "t:labels.height",
-      "default": "hero--adapt",
+      "default": "banner--adapt",
       "options": [
-        {"value": "hero--adapt", "label": "t:options.height.adapt"},
-        {"value": "hero--small", "label": "t:options.height.small"},
-        {"value": "hero--medium", "label": "t:options.height.medium"},
-        {"value": "hero--large", "label": "t:options.height.large"}
+        {"value": "banner--adapt", "label": "t:options.height.adapt"},
+        {"value": "banner--small", "label": "t:options.height.small"},
+        {"value": "banner--medium", "label": "t:options.height.medium"},
+        {"value": "banner--large", "label": "t:options.height.large"}
       ]
     }
   ],

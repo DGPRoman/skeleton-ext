@@ -5,27 +5,26 @@
   focal point, so a wide banner and a tall phone banner can be different
   photographs rather than two crops of one.
 
-  The box belongs to the caller: give it a size, and pass the ratios of that box
-  so the crop correction in `image-sizes` can be worked out. Pass 0 for a ratio
-  when the box takes the image's own proportions and nothing is cropped.
+  The box belongs to the caller: give the box one of the banner--* classes from
+  critical.css and name the same shape here, so the crop correction below can be
+  worked out. The shapes are listed in one place there and translated to numbers
+  in one place here; nothing else needs to know them.
 
   @param {image} image - The image for wide viewports
   @param {image} [image_mobile] - The image below 750px; falls back to `image`
   @param {string} [alt] - Alternative text; falls back to the image's own
-  @param {number} [mobile_ratio] - Width over height of the box below 750px
-  @param {number} [desktop_ratio] - Width over height of the box from 750px up
+  @param {string} [shape] - The banner--* shape of the box; adapt when omitted
   @param {string} [loading] - Loading attribute, 'eager' for anything on screen
   @param {string} [fetch_priority] - Fetch priority, 'high' for the largest paint
   @param {string} [placeholder] - Placeholder SVG drawn when there is no image
 
   @example
-  {% render 'image-cover', image: section.settings.image, desktop_ratio: 2.0 %}
+  {% render 'image-cover', image: section.settings.image, shape: 'banner--medium' %}
   {% render 'image-cover',
     image: block.settings.image,
     image_mobile: block.settings.image_mobile,
     alt: block.settings.alt,
-    mobile_ratio: 1.0,
-    desktop_ratio: 2.0,
+    shape: section.settings.shape,
     loading: 'eager',
     fetch_priority: 'high'
   %}
@@ -35,6 +34,23 @@
   assign wide = image | default: image_mobile
   assign narrow = image_mobile | default: image
   assign description = alt | default: wide.alt
+
+  # The numbers behind the banner--* shapes. Zero is banner--adapt: the box
+  # takes the picture's own proportions, so cover crops nothing and 100vw is
+  # already the right answer.
+  assign mobile_ratio = 0
+  assign desktop_ratio = 0
+  case shape
+    when 'banner--small'
+      assign mobile_ratio = 1.3333
+      assign desktop_ratio = 3.0
+    when 'banner--medium'
+      assign mobile_ratio = 1.0
+      assign desktop_ratio = 2.0
+    when 'banner--large'
+      assign mobile_ratio = 0.75
+      assign desktop_ratio = 1.5
+  endcase
 %}
 
 {%- if wide == blank -%}

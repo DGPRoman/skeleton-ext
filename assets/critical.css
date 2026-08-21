@@ -115,3 +115,95 @@ body {
 .shopify-section > .full-width {
   grid-column: 1 / -1;
 }
+
+/**
+ * Banner boxes
+ *
+ * A banner is a box of a fixed shape that a photograph is cropped to fill. The
+ * shape is a single custom property, so a section that owns such a box only has
+ * to name it, and the box can be a different element from the one carrying the
+ * name. Two shapes per option, because what suits a wide screen does not suit a
+ * phone, and they change over at the 750px the art direction in `image-cover`
+ * changes over at.
+ *
+ * These shapes are the same ones `image-cover` keys off by name, in numbers, to
+ * work out how much wider than its box `cover` will paint the file. Change one
+ * and change the other.
+ *
+ * This is critical CSS: a banner is usually the largest paint on the page, and
+ * the shape is what stops it shifting the page as it arrives.
+ */
+.banner {
+  display: block;
+  position: relative;
+  aspect-ratio: var(--banner-ratio, auto);
+}
+
+.banner--small {
+  --banner-ratio: 4 / 3;
+}
+
+.banner--medium {
+  --banner-ratio: 1 / 1;
+}
+
+.banner--large {
+  --banner-ratio: 3 / 4;
+}
+
+@media (min-width: 750px) {
+  .banner--small {
+    --banner-ratio: 3 / 1;
+  }
+
+  .banner--medium {
+    --banner-ratio: 2 / 1;
+  }
+
+  .banner--large {
+    --banner-ratio: 3 / 2;
+  }
+}
+
+/* No shape at all: the picture keeps its own proportions and nothing is cut */
+.banner--adapt .image-cover,
+.banner--adapt .image-cover img,
+.banner--adapt .image-cover__placeholder {
+  height: auto;
+}
+
+/**
+ * A focus ring for a link that is a photograph
+ *
+ * Two tones, so one of them always contrasts with the picture underneath, and
+ * both drawn inside, because a full-bleed banner has no outside. The inner one
+ * is a pseudo-element rather than an inset shadow: the image would cover a
+ * shadow. Author colours are discarded in forced-colors mode and system ones
+ * are not, so both are named again there.
+ */
+.banner-link {
+  display: block;
+  position: relative;
+}
+
+.banner-link:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: -3px;
+}
+
+.banner-link:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 3px solid #000;
+}
+
+@media (forced-colors: active) {
+  .banner-link:focus-visible {
+    outline-color: Highlight;
+  }
+
+  .banner-link:focus-visible::after {
+    border-color: Canvas;
+  }
+}

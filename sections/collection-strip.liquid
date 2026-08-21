@@ -1,22 +1,30 @@
 {% liquid
   assign heading_id = 'collection-strip-heading-' | append: section.id
-
-  # Every slide is a link to a category, so a block without one is a block the
-  # merchant has not finished: skipped on the storefront, kept in the editor,
-  # where it is the very thing being filled in.
-  assign renderable = 0
-  for block in section.blocks
-    if block.settings.collection != blank
-      assign renderable = renderable | plus: 1
-    endif
-  endfor
-
-  if request.design_mode
-    assign renderable = section.blocks.size
-  endif
 %}
 
-{% if renderable > 0 %}
+{%- comment -%}
+  Captured rather than printed in place, so whether there is anything to show is
+  the same question as whether this came out empty. Every slide is a link to a
+  category, so a block without one is a block the merchant has not finished:
+  skipped on the storefront, kept in the editor, where it is the very thing
+  being filled in.
+{%- endcomment -%}
+{%- capture slides -%}
+  {%- for block in section.blocks -%}
+    {%- if block.settings.collection != blank or request.design_mode -%}
+      <swiper-slide class="collection-strip__slide" {{ block.shopify_attributes }}>
+        {%- comment -%} The strip sits below the fold on every template that uses it {%- endcomment -%}
+        {%- render 'collection-card',
+          collection: block.settings.collection,
+          image: block.settings.image,
+          loading: 'lazy'
+        -%}
+      </swiper-slide>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{% if slides != blank %}
   {% if section.settings.heading != blank %}
     <h2 class="collection-strip__heading" id="{{ heading_id }}">
       {{ section.settings.heading | escape }}
@@ -46,31 +54,7 @@
     scrollbar-draggable="true"
     {% render 'carousel-a11y' %}
   >
-    {% for block in section.blocks %}
-      {% liquid
-        # Not `collection`: that name belongs to the collection template's own object
-        assign category = block.settings.collection
-
-        assign show = false
-        if category != blank
-          assign show = true
-        endif
-        if request.design_mode
-          assign show = true
-        endif
-      %}
-
-      {% if show %}
-        <swiper-slide class="collection-strip__slide" {{ block.shopify_attributes }}>
-          {% comment %} The strip sits below the fold on every template that uses it {% endcomment %}
-          {% render 'collection-card',
-            collection: category,
-            image: block.settings.image,
-            loading: 'lazy'
-          %}
-        </swiper-slide>
-      {% endif %}
-    {% endfor %}
+    {{ slides }}
   </swiper-container>
 {% endif %}
 

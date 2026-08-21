@@ -1,0 +1,94 @@
+{% doc %}
+  Renders an art-directed image that fills its box and is cropped to it.
+
+  Two files are served, one per viewport, each with its own srcset and its own
+  focal point, so a wide banner and a tall phone banner can be different
+  photographs rather than two crops of one.
+
+  The box belongs to the caller: give it a size, and pass the ratios of that box
+  so the crop correction in `image-sizes` can be worked out. Pass 0 for a ratio
+  when the box takes the image's own proportions and nothing is cropped.
+
+  @param {image} image - The image for wide viewports
+  @param {image} [image_mobile] - The image below 750px; falls back to `image`
+  @param {string} [alt] - Alternative text; falls back to the image's own
+  @param {number} [mobile_ratio] - Width over height of the box below 750px
+  @param {number} [desktop_ratio] - Width over height of the box from 750px up
+  @param {string} [loading] - Loading attribute, 'eager' for anything on screen
+  @param {string} [fetch_priority] - Fetch priority, 'high' for the largest paint
+  @param {string} [placeholder] - Placeholder SVG drawn when there is no image
+
+  @example
+  {% render 'image-cover', image: section.settings.image, desktop_ratio: 2.0 %}
+  {% render 'image-cover',
+    image: block.settings.image,
+    image_mobile: block.settings.image_mobile,
+    alt: block.settings.alt,
+    mobile_ratio: 1.0,
+    desktop_ratio: 2.0,
+    loading: 'eager',
+    fetch_priority: 'high'
+  %}
+{% enddoc %}
+
+{% liquid
+  assign wide = image | default: image_mobile
+  assign narrow = image_mobile | default: image
+  assign description = alt | default: wide.alt
+%}
+
+{%- if wide == blank -%}
+  {{ placeholder | default: 'hero-apparel-1' | placeholder_svg_tag: 'image-cover__placeholder' }}
+{%- else -%}
+  <picture
+    class="image-cover"
+    style="
+      --image-cover-position: {{ wide.presentation.focal_point | default: '50% 50%' }};
+      --image-cover-position-mobile: {{ narrow.presentation.focal_point | default: '50% 50%' }};
+    "
+  >
+    <source
+      media="(max-width: 749px)"
+      srcset="{% render 'image-srcset', image: narrow, widths: '375, 550, 750, 1100, 1500, 2000, 2600', max: 3000 %}"
+      sizes="{% render 'image-sizes', image: narrow, ratio: mobile_ratio %}"
+      width="{{ narrow.width }}"
+      height="{{ narrow.height }}"
+    >
+    <source
+      media="(min-width: 750px)"
+      srcset="{% render 'image-srcset', image: wide, widths: '750, 1100, 1500, 2000, 2400, 3000', max: 3840 %}"
+      sizes="{% render 'image-sizes', image: wide, ratio: desktop_ratio %}"
+      width="{{ wide.width }}"
+      height="{{ wide.height }}"
+    >
+    <img
+      src="{{ wide | image_url: width: 1500 }}"
+      alt="{{ description | escape }}"
+      width="{{ wide.width }}"
+      height="{{ wide.height }}"
+      loading="{{ loading | default: 'lazy' }}"
+      fetchpriority="{{ fetch_priority | default: 'auto' }}"
+    >
+  </picture>
+{%- endif -%}
+
+{% stylesheet %}
+  .image-cover,
+  .image-cover img,
+  .image-cover__placeholder {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* The crop honours the merchant's focal point, one per art-directed file */
+  .image-cover img {
+    object-fit: cover;
+    object-position: var(--image-cover-position-mobile);
+  }
+
+  @media (min-width: 750px) {
+    .image-cover img {
+      object-position: var(--image-cover-position);
+    }
+  }
+{% endstylesheet %}

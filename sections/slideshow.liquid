@@ -70,7 +70,6 @@
       {% for block in section.blocks %}
         {% liquid
           assign image = block.settings.image | default: block.settings.image_mobile
-          assign image_mobile = block.settings.image_mobile | default: block.settings.image
           assign alt = block.settings.alt | default: image.alt
 
           # The first slide is the one on screen, and on the home page it is the
@@ -88,10 +87,6 @@
         <swiper-slide
           class="slideshow__slide"
           data-index="{{ forloop.index0 }}"
-          style="
-            --slide-position: {{ image.presentation.focal_point | default: '50% 50%' }};
-            --slide-position-mobile: {{ image_mobile.presentation.focal_point | default: '50% 50%' }};
-          "
           {{ block.shopify_attributes }}
         >
           {%- if block.settings.link != blank -%}
@@ -105,38 +100,19 @@
             >
           {%- endif -%}
 
-          {% if image != blank %}
-            <picture>
-              <source
-                media="(max-width: 749px)"
-                srcset="{% render 'image-srcset', image: image_mobile, widths: '375, 550, 750, 1100, 1500, 2000, 2600', max: 3000 %}"
-                sizes="{% render 'image-sizes', image: image_mobile, ratio: mobile_ratio %}"
-                width="{{ image_mobile.width }}"
-                height="{{ image_mobile.height }}"
-              >
-              <source
-                media="(min-width: 750px)"
-                srcset="{% render 'image-srcset', image: image, widths: '750, 1100, 1500, 2000, 2400, 3000', max: 3840 %}"
-                sizes="{% render 'image-sizes', image: image, ratio: desktop_ratio %}"
-                width="{{ image.width }}"
-                height="{{ image.height }}"
-              >
-              <img
-                src="{{ image | image_url: width: 1500 }}"
-                alt="{{ alt | escape }}"
-                width="{{ image.width }}"
-                height="{{ image.height }}"
-                loading="{{ loading }}"
-                fetchpriority="{{ fetch_priority }}"
-              >
-            </picture>
-          {% else %}
-            {%- comment -%} Placeholders differ per slide, so an empty slideshow still reads as one {%- endcomment -%}
-            {%- capture placeholder -%}
-              {%- cycle 'hero-apparel-1', 'hero-apparel-2', 'hero-apparel-3' -%}
-            {%- endcapture -%}
-            {{ placeholder | strip | placeholder_svg_tag: 'slideshow__placeholder' }}
-          {% endif %}
+          {%- comment -%} Placeholders differ per slide, so an empty slideshow still reads as one {%- endcomment -%}
+          {%- capture placeholder -%}{%- cycle 'hero-apparel-1', 'hero-apparel-2', 'hero-apparel-3' -%}{%- endcapture -%}
+
+          {% render 'image-cover',
+            image: block.settings.image,
+            image_mobile: block.settings.image_mobile,
+            alt: block.settings.alt,
+            mobile_ratio: mobile_ratio,
+            desktop_ratio: desktop_ratio,
+            loading: loading,
+            fetch_priority: fetch_priority,
+            placeholder: placeholder
+          %}
 
           {%- if block.settings.link != blank -%}
             </a>
@@ -213,19 +189,6 @@
     position: relative;
     width: 100%;
     height: 100%;
-  }
-
-  .slideshow__slide picture,
-  .slideshow__slide img,
-  .slideshow__placeholder {
-    width: 100%;
-    height: 100%;
-  }
-
-  /* The crop honours the merchant's focal point, one per art-directed file */
-  .slideshow__slide img {
-    object-fit: cover;
-    object-position: var(--slide-position-mobile);
   }
 
   /* Two tones, so one of them always contrasts with the photo underneath.
@@ -317,10 +280,6 @@
   }
 
   @media (min-width: 750px) {
-    .slideshow__slide img {
-      object-position: var(--slide-position);
-    }
-
     .slideshow--small {
       --slideshow-ratio: 3 / 1;
     }

@@ -38,12 +38,16 @@
     "section": "Section",
     "settings": "Settings",
     "sidebar": "Sidebar",
+    "slide": "Slide",
+    "slideshow": "Slideshow",
     "text": "Text",
     "theme": "Theme",
     "typography": "Typography"
   },
   "labels": {
     "alignment": "Alignment",
+    "autoplay": "Autoplay",
+    "autoplay_interval": "Change slides every",
     "background": "Background",
     "background_mobile": "Background mobile",
     "foreground": "Foreground",
@@ -91,6 +95,6 @@
       "title": "Title",
       "subtitle": "Subtitle",
       "normal": "Normal text"
-    },
+    }
   }
 }

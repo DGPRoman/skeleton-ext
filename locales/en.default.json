@@ -51,5 +51,15 @@
     "submit": "Search",
     "no_results_html": "No results found for {{ terms }}",
     "results_for_html": "{{ count }} results found for {{ terms }}"
+  },
+  "slideshow": {
+    "carousel": "Carousel",
+    "label": "Slideshow",
+    "slide_role": "Slide",
+    "position": "{{ index }} of {{ count }}",
+    "link_label": "Promotional slide",
+    "go_to_slide": "Go to slide {{ index }}",
+    "pause": "Pause slideshow",
+    "play": "Play slideshow"
   }
 }

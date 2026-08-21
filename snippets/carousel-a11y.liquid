@@ -9,11 +9,8 @@
 
   Meant to be rendered inside the opening <swiper-container> tag.
 
-  @param {boolean} [pagination] - Pass true when the carousel shows bullets
-
   @example
   <swiper-container {% render 'carousel-a11y' %}>
-  <swiper-container {% render 'carousel-a11y', pagination: true %}>
 {% enddoc %}
 {%- liquid
   assign index = '{{' | append: 'index' | append: '}}'
@@ -22,6 +19,3 @@
 a11y-container-role-description-message="{{ 'carousel.role' | t | escape }}"
 a11y-item-role-description-message="{{ 'carousel.slide_role' | t | escape }}"
 a11y-slide-label-message="{{ 'carousel.position' | t: index: index, count: total | escape }}"
-{%- if pagination %}
-  a11y-pagination-bullet-message="{{ 'carousel.go_to_slide' | t: index: index | escape }}"
-{%- endif -%}

@@ -16,8 +16,7 @@
   "carousel": {
     "role": "Carousel",
     "slide_role": "Slide",
-    "position": "{{ index }} of {{ count }}",
-    "go_to_slide": "Go to slide {{ index }}"
+    "position": "{{ index }} of {{ count }}"
   },
   "cart": {
     "checkout": "Checkout",

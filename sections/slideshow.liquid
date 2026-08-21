@@ -52,9 +52,7 @@
       speed="1000"
       rewind="true"
       keyboard-enabled="true"
-      pagination="true"
-      pagination-clickable="true"
-      {% render 'carousel-a11y', pagination: true %}
+      {% render 'carousel-a11y' %}
       {% if autoplay %}
         autoplay-delay="{{ section.settings.interval | times: 1000 }}"
         autoplay-disable-on-interaction="false"
@@ -116,9 +114,10 @@
 
     {% if autoplay %}
       {% comment %}
-        Swiper has no pause control of its own, and moving content that starts on
-        its own has to be stoppable. Its own bullets sit centred, so this goes in
-        the corner and the two never overlap.
+        Moving content that starts on its own has to be stoppable, and Swiper has
+        no control of its own. This one is out of sight until it is tabbed to, so
+        the banner carries no chrome at all; a pointer stops it by resting on it
+        instead.
       {% endcomment %}
       <button
         class="slideshow__pause"
@@ -135,18 +134,10 @@
 {% endif %}
 
 {% stylesheet %}
+  /* Relative for the one absolutely positioned thing left inside it */
   .slideshow {
     display: block;
     position: relative;
-
-    /* Swiper draws its bullets inside its shadow DOM. Custom properties are the
-       one thing that crosses that boundary, and these are the names it reads. */
-    --swiper-pagination-color: #fff;
-    --swiper-pagination-bullet-inactive-color: #fff;
-    --swiper-pagination-bullet-inactive-opacity: 0.5;
-    --swiper-pagination-bullet-size: 0.75rem;
-    --swiper-pagination-bullet-horizontal-gap: 0.25rem;
-    --swiper-pagination-bottom: clamp(0.75rem, 2vw, 1.5rem);
   }
 
   /* The width is spelled out: a ratio alone gives the element no intrinsic
@@ -220,6 +211,19 @@
 
   .slideshow__pause:hover {
     background-color: rgb(255 255 255 / 1);
+  }
+
+  /* Out of sight, but still in the tab order, and still in the corner it will
+     appear in. Not display:none and not visibility:hidden: either of those
+     would take it out of the tab order along with the picture. :focus rather
+     than :focus-visible, or a click on it would make it disappear. */
+  .slideshow__pause:not(:focus) {
+    width: 1px;
+    height: 1px;
+    /* clip-path hides the icon but leaves it in the scrollable overflow, which
+       is 7px of sideways scroll on a phone. This is what takes it out. */
+    overflow: hidden;
+    clip-path: inset(50%);
   }
 
   .slideshow__pause svg {
@@ -328,23 +332,6 @@
         pause?.remove();
       }
 
-      // Author styles stop at the shadow boundary, and the bullets live past it
-      this.container.injectStyles = [
-        `.swiper-pagination-bullet:focus-visible {
-          outline: 2px solid #000;
-          outline-offset: 2px;
-          box-shadow: 0 0 0 4px #fff;
-        }
-        @media (forced-colors: active) {
-          .swiper-pagination-bullet {
-            border: 1px solid CanvasText;
-          }
-          .swiper-pagination-bullet-active {
-            background-color: Highlight;
-          }
-        }`,
-      ];
-
       this.container.initialize();
       this.swiper = this.container.swiper;
 
@@ -357,6 +344,16 @@
 
       if (this.swiper.params.autoplay?.enabled) {
         pause?.addEventListener('click', () => this.#toggle(pause), { signal });
+
+        // Swiper has a pauseOnMouseEnter of its own, but it drives its own
+        // pause/resume pair, which would restart a banner the visitor stopped.
+        this.addEventListener('pointerenter', (event) => {
+          if (event.pointerType === 'mouse') this.#hold('hover');
+        }, { signal });
+
+        this.addEventListener('pointerleave', (event) => {
+          if (event.pointerType === 'mouse') this.#release('hover');
+        }, { signal });
 
         // Swiper stops autoplay for a hidden tab on its own, but not for a
         // slideshow that has been scrolled past.

@@ -13,11 +13,20 @@
     "comment_form_submit": "Post",
     "comment_form_title": "Add a comment"
   },
+  "carousel": {
+    "role": "Carousel",
+    "slide_role": "Slide",
+    "position": "{{ index }} of {{ count }}",
+    "go_to_slide": "Go to slide {{ index }}"
+  },
   "cart": {
     "checkout": "Checkout",
     "title": "Cart",
     "update": "Update",
     "remove": "Remove"
+  },
+  "collections": {
+    "title": "Collections"
   },
   "customers": {
     "login": {
@@ -26,9 +35,6 @@
       "submit": "Sign in",
       "title": "Login"
     }
-  },
-  "collections": {
-    "title": "Collections"
   },
   "gift_card": {
     "add_to_apple_wallet": "Add to Apple Wallet",
@@ -53,12 +59,8 @@
     "results_for_html": "{{ count }} results found for {{ terms }}"
   },
   "slideshow": {
-    "carousel": "Carousel",
     "label": "Slideshow",
-    "slide_role": "Slide",
-    "position": "{{ index }} of {{ count }}",
     "link_label": "Promotional slide",
-    "go_to_slide": "Go to slide {{ index }}",
     "pause": "Pause slideshow",
     "play": "Play slideshow"
   }

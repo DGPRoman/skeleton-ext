@@ -1,0 +1,169 @@
+{% liquid
+  assign heading_id = 'collection-strip-heading-' | append: section.id
+
+  # Every slide is a link to a category, so a block without one is a block the
+  # merchant has not finished: skipped on the storefront, kept in the editor,
+  # where it is the very thing being filled in.
+  assign renderable = 0
+  for block in section.blocks
+    if block.settings.collection != blank
+      assign renderable = renderable | plus: 1
+    endif
+  endfor
+
+  if request.design_mode
+    assign renderable = section.blocks.size
+  endif
+%}
+
+{% if renderable > 0 %}
+  {% if section.settings.heading != blank %}
+    <h2 class="collection-strip__heading" id="{{ heading_id }}">
+      {{ section.settings.heading | escape }}
+    </h2>
+  {% endif %}
+
+  {% comment %}
+    A free-scrolling strip: the slides keep the width they are given in CSS, so
+    how many fit is a media query rather than a Swiper breakpoint. Only the gap
+    is Swiper's business, and that is what the breakpoints attribute carries.
+
+    Nothing here autoplays, so unlike the slideshow this needs no script of its
+    own; the attributes are the whole configuration.
+  {% endcomment %}
+  <swiper-container
+    class="collection-strip"
+    {% if section.settings.heading != blank %}
+      role="group"
+      aria-roledescription="{{ 'carousel.role' | t | escape }}"
+      aria-labelledby="{{ heading_id }}"
+    {% endif %}
+    slides-per-view="auto"
+    space-between="8"
+    breakpoints='{"750": {"spaceBetween": 12}, "1200": {"spaceBetween": 16}}'
+    free-mode="true"
+    scrollbar="true"
+    scrollbar-draggable="true"
+    {% render 'carousel-a11y' %}
+  >
+    {% for block in section.blocks %}
+      {% liquid
+        # Not `collection`: that name belongs to the collection template's own object
+        assign category = block.settings.collection
+
+        assign show = false
+        if category != blank
+          assign show = true
+        endif
+        if request.design_mode
+          assign show = true
+        endif
+      %}
+
+      {% if show %}
+        <swiper-slide class="collection-strip__slide" {{ block.shopify_attributes }}>
+          {% comment %} The strip sits below the fold on every template that uses it {% endcomment %}
+          {% render 'collection-card',
+            collection: category,
+            image: block.settings.image,
+            loading: 'lazy'
+          %}
+        </swiper-slide>
+      {% endif %}
+    {% endfor %}
+  </swiper-container>
+{% endif %}
+
+{% stylesheet %}
+  .collection-strip__heading {
+    margin-block-end: 1rem;
+  }
+
+  /* Before the engine upgrades the element, its children are plain unknown
+     tags: without this they stack down the page instead of sitting in a row.
+     They must not shrink either, or the cards would be laid out at a twelfth
+     of their width and the whole strip would jump taller on upgrade. Scoped to
+     this carousel's own class, because every section's stylesheet ends up in
+     one bundle and a bare swiper-container rule would reach all of them. */
+  .collection-strip:not(:defined) {
+    display: flex;
+    gap: 0.5rem;
+    overflow: hidden;
+  }
+
+  .collection-strip:not(:defined) > swiper-slide {
+    flex: 0 0 auto;
+  }
+
+  .collection-strip {
+    display: block;
+
+    /* Both lines are load-bearing. Swiper gives its host margin-inline: auto,
+       and auto margins turn a stretched grid item into a shrink-to-fit one, so
+       the strip sizes itself to a dozen category names in a row rather than to
+       its column. The width pins it back to the column; min-width lifts the
+       min-content floor that would otherwise still hold it open. Without them
+       the whole page scrolls sideways on a phone. */
+    width: 100%;
+    min-width: 0;
+
+    /* Swiper's own names, the only way past its shadow boundary */
+    --swiper-scrollbar-bottom: 0;
+    --swiper-scrollbar-size: 0.25rem;
+    --swiper-scrollbar-bg-color: rgb(0 0 0 / 0.08);
+    --swiper-scrollbar-drag-bg-color: rgb(0 0 0 / 0.4);
+  }
+
+  /* The scrollbar is drawn over the foot of the track, so the card stops short
+     of it rather than the track growing a gutter the slides would be cut in.
+     Categories are a word under a picture, so more of them fit than products. */
+  .collection-strip__slide {
+    width: 40%;
+    height: auto;
+    padding-block-end: 1.5rem;
+  }
+
+  @media (min-width: 750px) {
+    .collection-strip__slide {
+      width: 24%;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .collection-strip__slide {
+      width: 16%;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.collection_strip",
+  "tag": "section",
+  "max_blocks": 12,
+  "settings": [
+    {"type": "text", "id": "heading", "label": "t:labels.heading", "default": "Shop by category"}
+  ],
+  "blocks": [
+    {
+      "type": "category",
+      "name": "t:general.category",
+      "settings": [
+        {"type": "collection", "id": "collection", "label": "t:general.collection"},
+        {"type": "image_picker", "id": "image", "label": "t:labels.image", "info": "t:info.collection_image"}
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.collection_strip",
+      "blocks": [
+        {"type": "category"},
+        {"type": "category"},
+        {"type": "category"},
+        {"type": "category"}
+      ]
+    }
+  ]
+}
+{% endschema %}

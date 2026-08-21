@@ -22,8 +22,6 @@
     endif
   endif
 
-  assign swiper_index = '{{' | append: 'index' | append: '}}'
-  assign swiper_total = '{{' | append: 'slidesLength' | append: '}}'
 %}
 
 {% if count > 0 %}
@@ -35,7 +33,7 @@
   <theme-slideshow
     class="slideshow {{ section.settings.height }} full-width"
     role="region"
-    aria-roledescription="{{ 'slideshow.carousel' | t | escape }}"
+    aria-roledescription="{{ 'carousel.role' | t | escape }}"
     aria-label="{{ 'slideshow.label' | t | escape }}"
   >
     {% comment %}
@@ -43,9 +41,7 @@
       called. Rewind rather than loop: a crossfade has no direction, so there is
       nothing to gain from Swiper reordering the slides in the DOM.
 
-      Swiper interpolates its own tokens into the a11y messages. They are built
-      out of pieces above, because Liquid closes an output tag at the first }}
-      it sees - braces written inline would cut the expression in half.
+      The translated announcements come from the shared carousel-a11y snippet.
     {% endcomment %}
     <swiper-container
       class="slideshow__swiper"
@@ -58,10 +54,7 @@
       keyboard-enabled="true"
       pagination="true"
       pagination-clickable="true"
-      a11y-container-role-description-message="{{ 'slideshow.carousel' | t | escape }}"
-      a11y-item-role-description-message="{{ 'slideshow.slide_role' | t | escape }}"
-      a11y-slide-label-message="{{ 'slideshow.position' | t: index: swiper_index, count: swiper_total | escape }}"
-      a11y-pagination-bullet-message="{{ 'slideshow.go_to_slide' | t: index: swiper_index | escape }}"
+      {% render 'carousel-a11y', pagination: true %}
       {% if autoplay %}
         autoplay-delay="{{ section.settings.interval | times: 1000 }}"
         autoplay-disable-on-interaction="false"
@@ -165,16 +158,18 @@
   }
 
   /* Before the engine upgrades the element, its children are plain unknown tags:
-     without this they stack down the page at their natural height. */
-  swiper-container:not(:defined) {
+     without this they stack down the page at their natural height. Scoped to
+     this carousel's own class, because every section's stylesheet ends up in
+     one bundle and a bare swiper-container rule would reach all of them. */
+  .slideshow__swiper:not(:defined) {
     overflow: hidden;
   }
 
-  swiper-container:not(:defined) > swiper-slide {
+  .slideshow__swiper:not(:defined) > swiper-slide {
     display: none;
   }
 
-  swiper-container:not(:defined) > swiper-slide:first-child {
+  .slideshow__swiper:not(:defined) > swiper-slide:first-child {
     display: block;
     height: 100%;
   }

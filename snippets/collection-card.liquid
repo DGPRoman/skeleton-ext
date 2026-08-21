@@ -1,0 +1,86 @@
+{% doc %}
+  Renders a collection card: a square image and the collection title.
+
+  The whole card is the link, so the title is not one of its own — it is styled
+  as text and underlines with the card. With no collection picked the card still
+  renders, unlinked, so an unfinished block has a shape in the theme editor.
+
+  @param {collection} collection - The collection to link to
+  @param {image} [image] - A picture to use instead of the collection's own
+  @param {boolean} [show_description] - Print a trimmed description under the title
+  @param {string} [loading] - Loading attribute for the image, 'lazy' below the fold
+
+  @example
+  {% render 'collection-card', collection: collection %}
+  {% render 'collection-card', collection: collection, image: block.settings.image, loading: 'lazy' %}
+{% enddoc %}
+
+{% liquid
+  # featured_image is the collection's own, falling back to its first product's
+  assign card_image = image | default: collection.featured_image
+
+  assign wrapper = 'div'
+  if collection != blank
+    assign wrapper = 'a'
+  endif
+%}
+
+<{{ wrapper }}
+  class="collection-card"
+  {% if wrapper == 'a' %}
+    href="{{ collection.url }}"
+  {% endif %}
+>
+  {% if card_image != blank %}
+    {% render 'image',
+      class: 'collection-card__image',
+      image: card_image,
+      width: 600,
+      height: 600,
+      crop: 'center',
+      loading: loading
+    %}
+  {% else %}
+    {% comment %} An empty collection with no picture still needs the shape {% endcomment %}
+    <div class="collection-card__placeholder">
+      {{ 'collection-1' | placeholder_svg_tag }}
+    </div>
+  {% endif %}
+
+  <div class="collection-card__content">
+    {% if collection != blank %}
+      <p class="collection-card__title">{{ collection.title }}</p>
+    {% endif %}
+
+    {% if show_description and collection.description != blank %}
+      <p>{{ collection.description | strip_html | truncatewords: 15 }}</p>
+    {% endif %}
+  </div>
+</{{ wrapper }}>
+
+{% stylesheet %}
+  .collection-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    color: var(--color-foreground);
+    text-decoration: none;
+  }
+
+  .collection-card:hover .collection-card__title {
+    text-decoration: underline;
+  }
+
+  /* Squared off to match the crop the image above it is requested at */
+  .collection-card__placeholder {
+    aspect-ratio: 1;
+    background-color: rgb(0 0 0 / 0.04);
+  }
+
+  .collection-card__placeholder svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+{% endstylesheet %}

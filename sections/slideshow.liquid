@@ -279,55 +279,59 @@
       this.#controller = new AbortController();
       const signal = this.#controller.signal;
 
-      if (this.swiper.params.autoplay?.enabled) {
-        pause?.addEventListener('click', () => this.#toggle(pause), { signal });
+      if (this.swiper.params.autoplay?.enabled) this.#watchAutoplay(pause, signal);
+      this.#watchEditor(signal);
+    }
 
-        // Swiper has a pauseOnMouseEnter of its own, but it drives its own
-        // pause/resume pair, which would restart a banner the visitor stopped.
-        this.addEventListener('pointerenter', (event) => {
-          if (event.pointerType === 'mouse') this.#hold('hover');
+    // Everything that can stop the banner, and the one control that can start
+    // it again. Only wired when there is something to stop.
+    #watchAutoplay(pause, signal) {
+      pause?.addEventListener('click', () => this.#toggle(pause), { signal });
+
+      // Swiper has a pauseOnMouseEnter of its own, but it drives its own
+      // pause/resume pair, which would restart a banner the visitor stopped.
+      this.addEventListener('pointerenter', (event) => {
+        if (event.pointerType === 'mouse') this.#hold('hover');
+      }, { signal });
+
+      this.addEventListener('pointerleave', (event) => {
+        if (event.pointerType === 'mouse') this.#release('hover');
+      }, { signal });
+
+      // Swiper stops autoplay for a hidden tab on its own, but not for a
+      // slideshow that has been scrolled past.
+      this.#observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) this.#release('offscreen');
+          else this.#hold('offscreen');
+        },
+        { threshold: 0.25 }
+      );
+
+      this.#observer.observe(this);
+    }
+
+    // In the theme editor the merchant drives, so autoplay waits its turn.
+    // These events are announced on the document for every section on the page,
+    // so each one has to ask whether it was the one meant — once, here.
+    #watchEditor(signal) {
+      const mine = (event) => this.contains(event.target) || event.target.contains(this);
+      const on = (name, handler) =>
+        document.addEventListener(name, (event) => {
+          if (mine(event)) handler(event);
         }, { signal });
 
-        this.addEventListener('pointerleave', (event) => {
-          if (event.pointerType === 'mouse') this.#release('hover');
-        }, { signal });
+      on('shopify:section:select', () => this.#hold('editor'));
+      on('shopify:section:deselect', () => this.#release('editor'));
+      on('shopify:block:deselect', () => this.#release('editor'));
 
-        // Swiper stops autoplay for a hidden tab on its own, but not for a
-        // slideshow that has been scrolled past.
-        this.#observer = new IntersectionObserver(
-          ([entry]) => {
-            if (entry.isIntersecting) this.#release('offscreen');
-            else this.#hold('offscreen');
-          },
-          { threshold: 0.25 }
-        );
-
-        this.#observer.observe(this);
-      }
-
-      // In the theme editor the merchant drives, so autoplay waits its turn
-      const involves = (event) => this.contains(event.target) || event.target.contains(this);
-
-      document.addEventListener('shopify:section:select', (event) => {
-        if (involves(event)) this.#hold('editor');
-      }, { signal });
-
-      document.addEventListener('shopify:section:deselect', (event) => {
-        if (involves(event)) this.#release('editor');
-      }, { signal });
-
-      document.addEventListener('shopify:block:deselect', (event) => {
-        if (involves(event)) this.#release('editor');
-      }, { signal });
-
-      document.addEventListener('shopify:block:select', (event) => {
-        if (!involves(event)) return;
+      on('shopify:block:select', (event) => {
         this.#hold('editor');
 
         // Rewind leaves the slides where they were authored, so the index holds
         const index = Number(event.target.dataset.index);
         if (Number.isInteger(index)) this.swiper.slideTo(index);
-      }, { signal });
+      });
     }
 
     #hold(reason) {

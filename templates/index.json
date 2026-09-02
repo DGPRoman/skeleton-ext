@@ -75,21 +75,24 @@
           "type": "category",
           "settings": {
             "collection": "automated-collection",
-            "image": ""
+            "image": "shopify://shop_images/Main_0a40b01b-5021-48c1-80d1-aa8ab4876d3d.jpg",
+            "image_hover": "shopify://shop_images/snowboard_purple_hydrogen.jpg"
           }
         },
         "category_b2": {
           "type": "category",
           "settings": {
             "collection": "frontpage",
-            "image": ""
+            "image": "shopify://shop_images/Main_b13ad453-477c-4ed1-9b43-81f3345adfd6.jpg",
+            "image_hover": "shopify://shop_images/Main_d624f226-0a89-4fe1-b333-0d1548b43c06.jpg"
           }
         },
         "category_b3": {
           "type": "category",
           "settings": {
             "collection": "hydrogen",
-            "image": ""
+            "image": "shopify://shop_images/Main_589fc064-24a2-4236-9eaf-13b2bd35d21d.jpg",
+            "image_hover": "shopify://shop_images/Main_0a4e9096-021a-4c1e-8750-24b233166a12.jpg"
           }
         }
       },

@@ -34,6 +34,7 @@
     "password": "Password",
     "primary": "Primary",
     "product": "Product",
+    "promo_panel": "Promo panel",
     "row": "Row",
     "search": "Search",
     "secondary": "Secondary",
@@ -42,8 +43,10 @@
     "sidebar": "Sidebar",
     "slide": "Slide",
     "slideshow": "Slideshow",
+    "split_banners": "Split banner",
     "text": "Text",
     "theme": "Theme",
+    "tile": "Tile",
     "typography": "Typography"
   },
   "labels": {
@@ -52,10 +55,12 @@
     "autoplay_interval": "Change slides every",
     "background": "Background",
     "background_mobile": "Background mobile",
+    "columns_mobile": "Columns on mobile",
     "foreground": "Foreground",
     "grid_gap": "Grid spacing",
     "grid_item_width": "Grid item width",
     "heading": "Heading",
+    "heading_color": "Heading color",
     "height": "Height",
     "image": "Image",
     "image_description": "Image description",
@@ -67,18 +72,25 @@
     "padding": "Padding",
     "page_margin": "Page margin",
     "page_width": "Page width",
+    "position": "Position",
+    "products": "Products",
     "show_payment_icons": "Show payment icons",
     "text_style": "Text style",
     "text": "Text"
   },
   "info": {
-    "collection_image": "Falls back to the category's own image"
+    "collection_image": "Falls back to the category's own image",
+    "tile_heading": "Leave empty when the picture already carries the wording"
   },
   "options": {
     "alignment": {
       "left": "Left",
       "center": "Center",
       "right": "Right"
+    },
+    "columns": {
+      "1": "1",
+      "2": "2"
     },
     "direction": {
       "horizontal": "Horizontal",
@@ -93,6 +105,11 @@
     "page_width": {
       "narrow": "Narrow",
       "wide": "Wide"
+    },
+    "position": {
+      "top": "Top",
+      "middle": "Middle",
+      "bottom": "Bottom"
     },
     "size": {
       "large": "Large",

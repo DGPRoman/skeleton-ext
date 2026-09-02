@@ -4,6 +4,9 @@
     "not_found": "Page not found.",
     "back_to_shopping": "Back to shopping"
   },
+  "banner_tile": {
+    "link_label": "Promotional tile"
+  },
   "blog": {
     "article_comments": "Comments",
     "article_metadata_html": "{{ date }} by {{ author }}",
@@ -16,7 +19,9 @@
   "carousel": {
     "role": "Carousel",
     "slide_role": "Slide",
-    "position": "{{ index }} of {{ count }}"
+    "position": "{{ index }} of {{ count }}",
+    "pause": "Pause carousel",
+    "play": "Play carousel"
   },
   "cart": {
     "checkout": "Checkout",

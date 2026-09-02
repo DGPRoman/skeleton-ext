@@ -1,0 +1,138 @@
+{% doc %}
+  Renders a product card: a square image and the product's title.
+
+  The whole card is the link, so the title is not one of its own — it is styled
+  as text and underlines with the card. Unlike collection-card this names no
+  colour of its own and inherits instead, because it is shown on a panel whose
+  background the merchant picked.
+
+  With no product given the card still renders, unlinked, so an unfinished block
+  has a shape in the theme editor.
+
+  @param {product} [product] - The product to link to; the card is a placeholder without one
+  @param {string} [class] - Optional extra class, e.g. 'product-card--center'
+  @param {string} [sizes] - How wide the card renders, for the browser to pick a candidate against
+  @param {string} [loading] - Loading attribute for the image, 'lazy' below the fold
+
+  @example
+  {% render 'product-card', product: product %}
+  {% render 'product-card', product: product, class: 'product-card--center', sizes: '19vw', loading: 'lazy' %}
+{% enddoc %}
+
+{% liquid
+  assign wrapper = 'div'
+  if product != blank
+    assign wrapper = 'a'
+  endif
+%}
+
+<{{ wrapper }}
+  class="product-card {{ class }}"
+  {% if wrapper == 'a' %}
+    href="{{ product.url }}"
+  {% endif %}
+>
+  {% if product.featured_image != blank %}
+    {{
+      product.featured_image
+      | image_url: width: 800, height: 800, crop: 'center'
+      | image_tag:
+        class: 'product-card__image',
+        widths: '150, 200, 300, 400, 600, 800',
+        sizes: sizes,
+        loading: loading
+    }}
+  {% else %}
+    {% comment %} A product with no picture, or no product at all, still needs the shape {% endcomment %}
+    <div class="product-card__placeholder">
+      {{ 'product-1' | placeholder_svg_tag }}
+    </div>
+  {% endif %}
+
+  {% if product != blank %}
+    <p class="product-card__title">{{ product.title }}</p>
+  {% endif %}
+</{{ wrapper }}>
+
+{% stylesheet %}
+  /* currentcolor rather than a named token: the card sits on merchant-chosen
+     paint, so the panel decides what legible is and the card follows. */
+  .product-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .product-card:hover .product-card__title {
+    text-decoration: underline;
+  }
+
+  /* The paint under this card is the merchant's, so the ring is drawn in the
+     colour they already chose to be legible on it rather than the browser's
+     blue, which could land on a panel of the same blue. Author colours are
+     discarded in forced-colors mode and system ones are not, so name one there. */
+  .product-card:focus-visible {
+    outline: 2px solid currentcolor;
+    outline-offset: 2px;
+  }
+
+  @media (forced-colors: active) {
+    .product-card:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+
+  /* Squared off to match the crop the image above it is requested at, and
+     declared here rather than left to the file, so the row of cards holds its
+     height before any of them arrive. */
+  .product-card__image,
+  .product-card__placeholder {
+    aspect-ratio: 1;
+    width: 100%;
+    height: auto;
+  }
+
+  .product-card__placeholder {
+    background-color: rgb(0 0 0 / 0.06);
+  }
+
+  .product-card__placeholder svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Two lines at most: one long product name would otherwise set the height of
+     every card beside it, and these are cards in a fixed-height panel. */
+  .product-card__title {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+
+  /* One card on show rather than a row of them, so it is centred and the
+     picture stops short of the card's full width. */
+  .product-card--center {
+    text-align: center;
+  }
+
+  .product-card--center .product-card__image,
+  .product-card--center .product-card__placeholder {
+    width: 68%;
+    margin-inline: auto;
+  }
+
+  /* Held at two lines whether the name needs them or not: these cards crossfade
+     over one another, and a card a line shorter would jog the panel's contents
+     every time it came round. */
+  .product-card--center .product-card__title {
+    min-height: 2.8em;
+  }
+{% endstylesheet %}

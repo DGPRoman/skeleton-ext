@@ -1,0 +1,189 @@
+{%- liquid
+  # From 750px a half is always half the viewport; below it, the merchant's call
+  assign width_mobile = 100
+  if section.settings.columns_mobile == '2'
+    assign width_mobile = 50
+  endif
+-%}
+
+{%- comment -%}
+  Captured rather than printed in place, so whether there is anything to show is
+  the same question as whether this came out empty.
+{%- endcomment -%}
+{%- capture halves -%}
+  {%- for block in section.blocks -%}
+    {%- liquid
+      # A section is one row, so when it leads the page both halves are on
+      # screen and the first of them is the largest paint. Stacked on a phone
+      # the second one is not, but it is the next thing scrolled to, and one
+      # extra request beats a blank half on every desktop.
+      assign loading = 'lazy'
+      assign fetch_priority = 'auto'
+      if section.index == 1
+        assign loading = 'eager'
+        if forloop.first
+          assign fetch_priority = 'high'
+        endif
+      endif
+    -%}
+
+    {%- comment -%}
+      A half is a half whatever it holds, so the two kinds part company here and
+      nowhere else. Each decides for itself what counts as unfinished — a tile
+      is a picture, a panel is the products in it — and an unfinished one is
+      skipped on the storefront but kept in the editor, where it is the very
+      thing being filled in.
+    {%- endcomment -%}
+    {%- case block.type -%}
+      {%- when 'tile' -%}
+        {%- assign image = block.settings.image | default: block.settings.image_mobile -%}
+        {%- if image != blank or request.design_mode -%}
+          {%- render 'split-banner-tile',
+            block: block,
+            loading: loading,
+            fetch_priority: fetch_priority,
+            width_mobile: width_mobile
+          -%}
+        {%- endif -%}
+
+      {%- when 'promo' -%}
+        {%- if block.settings.products != blank or request.design_mode -%}
+          {%- comment -%}
+            No fetch priority: a panel's largest paint is one card of several,
+            so there is nothing here worth telling the browser to race for.
+          {%- endcomment -%}
+          {%- render 'split-banner-promo',
+            block: block,
+            loading: loading,
+            width_mobile: width_mobile
+          -%}
+        {%- endif -%}
+    {%- endcase -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{% if halves != blank %}
+  <div
+    class="split-banners full-width"
+    style="
+      --split-banners-columns: {{ section.settings.columns_mobile }};
+      --split-banners-gap: {{ section.settings.gap }}px;
+    "
+  >
+    {{ halves }}
+  </div>
+{% endif %}
+
+{% stylesheet %}
+  /* Two abreast from the 750px the art direction inside image-cover changes
+     over at, so the desktop file and the desktop track count arrive together.
+     Below it the phone gets whichever count the merchant asked for. */
+  .split-banners {
+    display: grid;
+    grid-template-columns: repeat(var(--split-banners-columns), 1fr);
+    gap: var(--split-banners-gap);
+  }
+
+  @media (min-width: 750px) {
+    .split-banners {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.split_banners",
+  "tag": "section",
+  "max_blocks": 2,
+  "settings": [
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "t:labels.columns_mobile",
+      "default": "1",
+      "options": [
+        {"value": "1", "label": "t:options.columns.1"},
+        {"value": "2", "label": "t:options.columns.2"}
+      ]
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "t:labels.grid_gap",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "blocks": [
+    {
+      "type": "tile",
+      "name": "t:general.tile",
+      "settings": [
+        {"type": "image_picker", "id": "image", "label": "t:labels.background"},
+        {"type": "image_picker", "id": "image_mobile", "label": "t:labels.background_mobile"},
+        {"type": "text", "id": "alt", "label": "t:labels.image_description"},
+        {"type": "url", "id": "link", "label": "t:labels.link"},
+        {"type": "text", "id": "heading", "label": "t:labels.heading", "info": "t:info.tile_heading"},
+        {
+          "type": "color",
+          "id": "heading_color",
+          "label": "t:labels.heading_color",
+          "default": "#FFFFFF",
+          "visible_if": "{{ block.settings.heading != blank }}"
+        },
+        {
+          "type": "text_alignment",
+          "id": "alignment",
+          "label": "t:labels.alignment",
+          "default": "left",
+          "visible_if": "{{ block.settings.heading != blank }}"
+        },
+        {
+          "type": "select",
+          "id": "position",
+          "label": "t:labels.position",
+          "default": "end",
+          "visible_if": "{{ block.settings.heading != blank }}",
+          "options": [
+            {"value": "start", "label": "t:options.position.top"},
+            {"value": "center", "label": "t:options.position.middle"},
+            {"value": "end", "label": "t:options.position.bottom"}
+          ]
+        }
+      ]
+    },
+    {
+      "type": "promo",
+      "name": "t:general.promo_panel",
+      "settings": [
+        {"type": "product_list", "id": "products", "label": "t:labels.products", "limit": 12},
+        {"type": "text", "id": "heading", "label": "t:labels.heading"},
+        {"type": "color", "id": "background", "label": "t:labels.background", "default": "#f5f2ed"},
+        {"type": "color", "id": "foreground", "label": "t:labels.foreground", "default": "#333333"},
+        {"type": "checkbox", "id": "autoplay", "label": "t:labels.autoplay", "default": true},
+        {
+          "type": "range",
+          "id": "interval",
+          "label": "t:labels.autoplay_interval",
+          "visible_if": "{{ block.settings.autoplay }}",
+          "min": 3,
+          "max": 10,
+          "step": 1,
+          "unit": "s",
+          "default": 5
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.split_banners",
+      "blocks": [{"type": "tile"}, {"type": "tile"}]
+    }
+  ]
+}
+{% endschema %}

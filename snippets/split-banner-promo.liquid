@@ -1,0 +1,402 @@
+{% doc %}
+  Renders one half of a split banner as a coloured panel: a heading over a
+  carousel that crossfades through products one at a time.
+
+  The panel takes the same square box as a tile, so a row is a pair of squares
+  whatever its two halves turn out to be. That is not decoration: the halves are
+  grid items, and a taller one would hand the tile beside it a definite height
+  that overrides the tile's own aspect-ratio and squashes its picture.
+
+  @param {object} block - The section block carrying the panel's settings
+  @param {string} [loading] - Loading attribute for the card images, 'eager' for anything on screen
+  @param {number} [width_mobile] - The panel's width below 750px, as a percentage of the viewport; the whole of it when omitted
+
+  @example
+  {% render 'split-banner-promo', block: block %}
+  {% render 'split-banner-promo', block: block, loading: 'eager', width_mobile: 50 %}
+{% enddoc %}
+
+{% liquid
+  assign heading_id = 'split-promo-heading-' | append: block.id
+  assign count = block.settings.products.count
+
+  # A single product is a picture, not a carousel: nothing to rotate
+  assign autoplay = false
+  if count > 1 and block.settings.autoplay
+    assign autoplay = true
+  endif
+
+  # How wide the picture actually renders, for the browser to size its request
+  # against. The picture is 68% of the carousel, the carousel is 66% of the
+  # panel less its padding on a phone and 56% of it from 750px, and the padding
+  # is about 8% — so 41% of the panel below 750px and 35% of it above. The panel
+  # is half the viewport from 750px, which is the 18vw below; below that it is
+  # whatever the section's column count makes it, so that half is worked out
+  # here rather than written down.
+  assign mobile_box = width_mobile | default: 100
+  assign mobile_size = mobile_box | times: 0.41 | round
+  assign sizes = '(min-width: 750px) 18vw, ' | append: mobile_size | append: 'vw'
+%}
+
+<div
+  class="banner banner--square split-promo"
+  style="
+    --promo-background: {{ block.settings.background }};
+    --promo-foreground: {{ block.settings.foreground }};
+  "
+  {{ block.shopify_attributes }}
+>
+  {% comment %}
+    The group sits out here so it covers the pause control as well as the
+    slides. Swiper puts its own roledescription on a div inside its shadow DOM,
+    where it never reaches the element carrying the name.
+  {% endcomment %}
+  <promo-carousel
+    class="split-promo__body"
+    {% if block.settings.heading != blank %}
+      role="group"
+      aria-roledescription="{{ 'carousel.role' | t | escape }}"
+      aria-labelledby="{{ heading_id }}"
+    {% endif %}
+  >
+    {% if block.settings.heading != blank %}
+      <h2 class="split-promo__heading" id="{{ heading_id }}">
+        {{- block.settings.heading | escape -}}
+      </h2>
+    {% endif %}
+
+    {% comment %}
+      Rewind rather than loop, for the reason the slideshow gives: a crossfade
+      has no direction, so there is nothing to gain from Swiper reordering the
+      slides in the DOM. init="false" is what lets the script below decide about
+      autoplay before Swiper reads its parameters.
+
+      No arrows and no dots, like the reference this follows — the panel carries
+      no chrome at all beyond the control that moving content has to have.
+    {% endcomment %}
+    <swiper-container
+      class="split-promo__carousel"
+      init="false"
+      slides-per-view="1"
+      effect="fade"
+      fade-effect-cross-fade="true"
+      speed="800"
+      rewind="true"
+      {% render 'carousel-a11y' %}
+      {% if autoplay %}
+        autoplay-delay="{{ block.settings.interval | times: 1000 }}"
+        autoplay-disable-on-interaction="false"
+      {% endif %}
+    >
+      {% if block.settings.products != blank %}
+        {% for product in block.settings.products %}
+          <swiper-slide class="split-promo__slide">
+            {% render 'product-card',
+              product: product,
+              class: 'product-card--center',
+              sizes: sizes,
+              loading: loading
+            %}
+          </swiper-slide>
+        {% endfor %}
+      {% else %}
+        {% comment %}
+          Only reachable in the theme editor, which is the one place an empty
+          panel should still read as a carousel rather than as nothing.
+        {% endcomment %}
+        <swiper-slide class="split-promo__slide">
+          {% render 'product-card', class: 'product-card--center' %}
+        </swiper-slide>
+      {% endif %}
+    </swiper-container>
+
+    {% if autoplay %}
+      {% comment %}
+        Moving content that starts on its own has to be stoppable, and Swiper
+        has no control of its own. This one is out of sight until it is tabbed
+        to, so the panel stays as clean as the reference; a pointer stops it by
+        resting on it instead.
+      {% endcomment %}
+      <button
+        class="split-promo__pause"
+        type="button"
+        aria-label="{{ 'carousel.pause' | t | escape }}"
+        data-label-pause="{{ 'carousel.pause' | t | escape }}"
+        data-label-play="{{ 'carousel.play' | t | escape }}"
+      >
+        <span class="split-promo__pause-icon">{{ 'icon-pause.svg' | inline_asset_content }}</span>
+        <span class="split-promo__play-icon">{{ 'icon-play.svg' | inline_asset_content }}</span>
+      </button>
+    {% endif %}
+  </promo-carousel>
+</div>
+
+{% stylesheet %}
+  .split-promo {
+    /* The square is the contract with the row, so nothing inside may break it:
+       a heading that wraps further than expected is cut off rather than allowed
+       to push the panel past the tile beside it. */
+    overflow: hidden;
+    background-color: var(--promo-background);
+    color: var(--promo-foreground);
+  }
+
+  /* The body fills the box instead of the box becoming a grid. critical.css
+     gives .banner display:block, and this stylesheet ships in a different file
+     whose order against critical.css is not guaranteed, so an equal-specificity
+     override of it would be a coin toss. The tile's caption fills its box the
+     same way, off the position:relative .banner already carries. */
+  .split-promo__body {
+    display: grid;
+    position: absolute;
+    inset: 0;
+    grid-template-rows: auto 1fr;
+    gap: 1rem;
+    padding: clamp(0.75rem, 4%, 2rem);
+  }
+
+  .split-promo__heading {
+    margin: 0;
+    font-size: clamp(1rem, 2.5vw, 1.5rem);
+    text-align: center;
+  }
+
+  .split-promo__carousel {
+    display: block;
+
+    /* Content-sized and centred in what the heading leaves, which is what makes
+       the panel read as airy rather than as a carousel with a gap above it. */
+    align-self: center;
+
+    /* One card, centred, taking about two thirds of the panel on a phone and
+       a little over half of it from 750px — the proportions the reference uses,
+       and what stops a single product filling a whole half of the page. */
+    width: 66%;
+    margin-inline: auto;
+
+    /* Swiper gives its host margin-inline:auto of its own, which on a stretched
+       grid item would collapse it to shrink-to-fit; the width above is what
+       pins it back. min-width lifts the min-content floor that would otherwise
+       still hold it open, and min-height is that same bug turned on its side —
+       a 1fr track's automatic minimum is min-content, and a card has a tall one. */
+    min-width: 0;
+    min-height: 0;
+  }
+
+  /* Before the engine upgrades the element, its children are plain unknown
+     tags: without this every product would stack down the panel instead of
+     only the first being on show. Scoped to this carousel's own class, because
+     every section's stylesheet ends up in one bundle and a bare
+     swiper-container rule would reach all three of them. */
+  .split-promo__carousel:not(:defined) {
+    overflow: hidden;
+  }
+
+  .split-promo__carousel:not(:defined) > swiper-slide {
+    display: none;
+  }
+
+  .split-promo__carousel:not(:defined) > swiper-slide:first-child {
+    display: block;
+  }
+
+  @media (min-width: 750px) {
+    .split-promo__carousel {
+      width: 56%;
+    }
+  }
+
+  .split-promo__pause {
+    display: grid;
+    place-items: center;
+    position: absolute;
+    inset-block-end: clamp(0.5rem, 2%, 1rem);
+    inset-inline-end: clamp(0.5rem, 2%, 1rem);
+    z-index: 1;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: rgb(255 255 255 / 0.8);
+    color: #000;
+    cursor: pointer;
+  }
+
+  .split-promo__pause:hover {
+    background-color: rgb(255 255 255 / 1);
+  }
+
+  /* Out of sight, but still in the tab order, and still in the corner it will
+     appear in. Not display:none and not visibility:hidden: either of those
+     would take it out of the tab order along with the control. :focus rather
+     than :focus-visible, or a click on it would make it disappear. */
+  .split-promo__pause:not(:focus) {
+    width: 1px;
+    height: 1px;
+    /* clip-path hides the icon but leaves it in the scrollable overflow, which
+       is a few pixels of sideways scroll on a phone. This is what takes it out. */
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .split-promo__pause svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .split-promo__pause-icon,
+  .split-promo__play-icon {
+    display: block;
+  }
+
+  /* The button says what it does next, so one icon is always the hidden one.
+     Both states are one class deep, so the later rule is the one that wins. */
+  .split-promo__play-icon,
+  .split-promo--paused .split-promo__pause-icon {
+    display: none;
+  }
+
+  .split-promo--paused .split-promo__play-icon {
+    display: block;
+  }
+
+  .split-promo__pause:focus-visible {
+    outline: 2px solid #000;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px #fff;
+  }
+
+  /* Author colours are discarded here, system colours are not, so name one */
+  @media (forced-colors: active) {
+    .split-promo__pause:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  // A trimmed relative of theme-slideshow: same responsibilities, one fewer —
+  // block selection picks the whole panel, so there is no slide to jump to.
+  // Kept separate rather than shared because Shopify builds the script bundle
+  // from the sections a page actually renders, so a panel on a page with no
+  // slideshow would find theme-slideshow undefined.
+  class PromoCarousel extends HTMLElement {
+    // Every reason to sit still is named, so one lifting does not undo another
+    #holds = new Set(['offscreen']);
+    #controller = null;
+    #observer = null;
+
+    connectedCallback() {
+      if (this.#controller) return;
+
+      this.container = this.querySelector('swiper-container');
+      if (!this.container) return;
+
+      // Both bundles are deferred, so the engine may land after this one does
+      customElements.whenDefined('swiper-container').then(() => this.#start());
+    }
+
+    disconnectedCallback() {
+      this.#controller?.abort();
+      this.#controller = null;
+      this.#observer?.disconnect();
+      this.#observer = null;
+    }
+
+    #start() {
+      if (!this.isConnected) return;
+
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const pause = this.querySelector('.split-promo__pause');
+
+      // Property setters only fill passedParams until initialize() runs, which
+      // is what init="false" buys. Autoplay has to be off before that, or a
+      // later start() would set a reduced-motion visitor's panel moving.
+      if (reduced) {
+        this.container.autoplay = false;
+        // Nothing will ever move now, so the control would be a dead one
+        pause?.remove();
+      }
+
+      this.container.initialize();
+      this.swiper = this.container.swiper;
+
+      // Attributes win over properties in getParams(), and the crossfade
+      // duration is one of them, so it can only be cut once Swiper has read it.
+      if (reduced) this.swiper.params.speed = 0;
+
+      this.#controller = new AbortController();
+      const signal = this.#controller.signal;
+
+      if (this.swiper.params.autoplay?.enabled) this.#watchAutoplay(pause, signal);
+      this.#watchEditor(signal);
+    }
+
+    #watchAutoplay(pause, signal) {
+      pause?.addEventListener('click', () => this.#toggle(pause), { signal });
+
+      // Swiper has a pauseOnMouseEnter of its own, but it drives its own
+      // pause/resume pair, which would restart a panel the visitor stopped.
+      this.addEventListener('pointerenter', (event) => {
+        if (event.pointerType === 'mouse') this.#hold('hover');
+      }, { signal });
+
+      this.addEventListener('pointerleave', (event) => {
+        if (event.pointerType === 'mouse') this.#release('hover');
+      }, { signal });
+
+      // Swiper stops autoplay for a hidden tab on its own, but not for a panel
+      // that has been scrolled past.
+      this.#observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) this.#release('offscreen');
+          else this.#hold('offscreen');
+        },
+        { threshold: 0.25 }
+      );
+
+      this.#observer.observe(this);
+    }
+
+    // In the theme editor the merchant drives, so autoplay waits its turn.
+    // These events are announced on the document for every section on the page,
+    // so each one has to ask whether it was the one meant — once, here.
+    #watchEditor(signal) {
+      const mine = (event) => this.contains(event.target) || event.target.contains(this);
+      const on = (name, handler) =>
+        document.addEventListener(name, (event) => {
+          if (mine(event)) handler(event);
+        }, { signal });
+
+      on('shopify:block:select', () => this.#hold('editor'));
+      on('shopify:block:deselect', () => this.#release('editor'));
+      on('shopify:section:select', () => this.#hold('editor'));
+      on('shopify:section:deselect', () => this.#release('editor'));
+    }
+
+    #hold(reason) {
+      this.#holds.add(reason);
+      this.swiper?.autoplay?.stop();
+    }
+
+    #release(reason) {
+      this.#holds.delete(reason);
+      if (this.#holds.size === 0) this.swiper?.autoplay?.start();
+    }
+
+    #toggle(button) {
+      const paused = this.#holds.has('visitor');
+
+      if (paused) this.#release('visitor');
+      else this.#hold('visitor');
+
+      this.closest('.split-promo')?.classList.toggle('split-promo--paused', !paused);
+      button.setAttribute('aria-label', paused ? button.dataset.labelPause : button.dataset.labelPlay);
+    }
+  }
+
+  if (!customElements.get('promo-carousel')) {
+    customElements.define('promo-carousel', PromoCarousel);
+  }
+{% endjavascript %}

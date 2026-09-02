@@ -1,0 +1,99 @@
+{% doc %}
+  Renders one half of a split banner: a square picture that links into a category.
+
+  The picture is the whole tile, so an optional caption is the only text there is.
+  Left empty, the tile is the photograph alone — which is what a file that
+  already has the category name set into it wants.
+
+  @param {object} block - The section block carrying the tile's settings
+  @param {string} [loading] - Loading attribute for the image, 'eager' for anything on screen
+  @param {string} [fetch_priority] - Fetch priority, 'high' for the largest paint
+  @param {number} [width_mobile] - The tile's width below 750px, as a percentage of the viewport; the whole of it when omitted
+
+  @example
+  {% render 'split-banner-tile', block: block %}
+  {% render 'split-banner-tile',
+    block: block,
+    loading: 'eager',
+    fetch_priority: 'high',
+    width_mobile: 50
+  %}
+{% enddoc %}
+
+{% liquid
+  assign image = block.settings.image | default: block.settings.image_mobile
+  assign alt = block.settings.alt | default: image.alt
+
+  assign wrapper = 'div'
+  if block.settings.link != blank
+    assign wrapper = 'a'
+  endif
+%}
+
+<{{ wrapper }}
+  class="banner banner--square split-banner{% if wrapper == 'a' %} banner-link{% endif %}"
+  {% if wrapper == 'a' %}
+    href="{{ block.settings.link }}"
+    {% comment %}
+      A linked picture is the whole link, so it must carry a name. The caption is
+      one when there is a caption, and the alt text is one when there is not.
+    {% endcomment %}
+    {% if block.settings.heading == blank and alt == blank %}
+      aria-label="{{ 'banner_tile.link_label' | t | escape }}"
+    {% endif %}
+  {% endif %}
+  {{ block.shopify_attributes }}
+>
+  {% comment %} A half is always half of the viewport from 750px, whatever the phone does {% endcomment %}
+  {% render 'image-cover',
+    image: block.settings.image,
+    image_mobile: block.settings.image_mobile,
+    alt: block.settings.alt,
+    shape: 'banner--square',
+    width_mobile: width_mobile,
+    width_desktop: 50,
+    loading: loading,
+    fetch_priority: fetch_priority,
+    placeholder: 'collection-1'
+  %}
+
+  {%- if block.settings.heading != blank -%}
+    {%- comment -%}
+      A paragraph rather than a heading: a promotional tile has no dependable
+      place in the document outline, the same reasoning collection-card follows.
+    {%- endcomment -%}
+    <p
+      class="split-banner__caption"
+      style="
+        --caption-color: {{ block.settings.heading_color }};
+        --caption-align: {{ block.settings.alignment }};
+        --caption-position: {{ block.settings.position }};
+      "
+    >
+      {{- block.settings.heading | escape -}}
+    </p>
+  {%- endif -%}
+</{{ wrapper }}>
+
+{% stylesheet %}
+  /* The tile is a banner box, so its shape and its positioning both come from
+     critical.css; the caption is all this file has to say. */
+
+  /* Laid over the whole picture rather than pinned to one edge, so where the
+     words sit is one property — how the box distributes its one line — and the
+     scrim behind them covers the picture whichever edge that turns out to be. */
+  .split-banner__caption {
+    display: grid;
+    position: absolute;
+    inset: 0;
+    align-content: var(--caption-position);
+    padding: clamp(0.75rem, 4%, 2rem);
+    background-image: linear-gradient(to top, rgb(0 0 0 / 0.5), rgb(0 0 0 / 0.1));
+    color: var(--caption-color);
+    font-size: clamp(1rem, 3.5vw, 2rem);
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: var(--caption-align);
+    text-wrap: balance;
+  }
+{% endstylesheet %}

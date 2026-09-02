@@ -64,6 +64,7 @@
     "height": "Height",
     "image": "Image",
     "image_description": "Image description",
+    "image_hover": "Hover image",
     "input_corner_radius": "Input corner radius",
     "layout_direction": "Layout direction",
     "link": "Link",
@@ -79,7 +80,7 @@
     "text": "Text"
   },
   "info": {
-    "collection_image": "Falls back to the category's own image",
+    "image_hover": "Shown while the pointer is over the card",
     "tile_heading": "Leave empty when the picture already carries the wording"
   },
   "options": {

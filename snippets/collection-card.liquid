@@ -1,51 +1,117 @@
 {% doc %}
-  Renders a collection card: a square image and the collection title.
+  Renders a collection card: a square picture and the collection title.
 
   The whole card is the link, so the title is not one of its own — it is styled
   as text and underlines with the card. With no collection picked the card still
   renders, unlinked, so an unfinished block has a shape in the theme editor.
 
+  Both pictures are the caller's to supply and neither is taken from the
+  collection: what a category looks like in a row is a merchant's decision, and
+  a caller that wants the collection's own picture passes it in. Give a second
+  one and the card turns over to it while the pointer is on it.
+
   @param {collection} collection - The collection to link to
-  @param {image} [image] - A picture to use instead of the collection's own
+  @param {image} [image] - The picture at rest
+  @param {image} [image_hover] - A second picture, crossfaded in while the card is hovered or focused
+  @param {number} [index] - The card's place in its row, which its placeholder is tinted and turned by
+  @param {string} [sizes] - How wide the card renders, for the browser to pick a candidate against
   @param {boolean} [show_description] - Print a trimmed description under the title
-  @param {string} [loading] - Loading attribute for the image, 'lazy' below the fold
+  @param {string} [loading] - Loading attribute for the pictures, 'lazy' below the fold
 
   @example
-  {% render 'collection-card', collection: collection %}
-  {% render 'collection-card', collection: collection, image: block.settings.image, loading: 'lazy' %}
+  {% render 'collection-card', collection: collection, image: collection.featured_image %}
+  {% render 'collection-card',
+    collection: block.settings.collection,
+    image: block.settings.image,
+    image_hover: block.settings.image_hover,
+    index: forloop.index,
+    sizes: '20vw',
+    loading: 'lazy'
+  %}
 {% enddoc %}
 
 {% liquid
-  # featured_image is the collection's own, falling back to its first product's
-  assign card_image = image | default: collection.featured_image
-
   assign wrapper = 'div'
   if collection != blank
     assign wrapper = 'a'
   endif
+
+  # One picture on its own is the one at rest, whichever of the two settings it
+  # was put in; a turn needs a picture underneath to turn away from.
+  assign rest = image | default: image_hover
+  assign turn = ''
+  if image != blank
+    assign turn = image_hover
+  endif
+
+  # Enough to tell one unfinished card from the next and no more. The hue steps
+  # by the golden angle, which is what spreads a short run of them furthest
+  # apart on the wheel; the turn moves the marks around the disc, so two cards
+  # differ in arrangement as well as in tint.
+  assign place = index | default: 1
+  assign hue = place | times: 137 | modulo: 360
+  assign spin = place | times: 47 | modulo: 360
 %}
 
 <{{ wrapper }}
-  class="collection-card"
+  class="collection-card{% if turn != blank %} collection-card--turns{% endif %}"
   {% if wrapper == 'a' %}
     href="{{ collection.url }}"
   {% endif %}
 >
-  {% if card_image != blank %}
-    {% render 'image',
-      class: 'collection-card__image',
-      image: card_image,
-      width: 600,
-      height: 600,
-      crop: 'center',
-      loading: loading
-    %}
-  {% else %}
-    {% comment %} An empty collection with no picture still needs the shape {% endcomment %}
-    <div class="collection-card__placeholder">
-      {{ 'collection-1' | placeholder_svg_tag }}
-    </div>
-  {% endif %}
+  <div class="collection-card__media">
+    {% if rest != blank %}
+      {% comment %}
+        Both pictures are described by the title under them rather than by an
+        alt of their own. A file's own description is written for a page where
+        it stands alone; read out here it would put a paragraph in front of the
+        category's name every time the link was announced.
+      {% endcomment %}
+      {{
+        rest
+        | image_url: width: 600, height: 600, crop: 'center'
+        | image_tag:
+          class: 'collection-card__image collection-card__image--rest',
+          alt: '',
+          widths: '120, 160, 200, 240, 320, 400, 480, 600',
+          sizes: sizes,
+          loading: loading
+      }}
+    {% else %}
+      {% comment %}
+        A disc rather than the grey square the other placeholders use: a row of
+        these is being filled in one category at a time, and a merchant needs to
+        see which ones are still waiting. Abstract, and tinted from the card's
+        own place in the row, so no two adjacent ones look alike.
+      {% endcomment %}
+      <svg
+        class="collection-card__placeholder"
+        style="--placeholder-hue: {{ hue }}"
+        viewBox="0 0 100 100"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <circle class="collection-card__disc" cx="50" cy="50" r="50" />
+        <g class="collection-card__marks" transform="rotate({{ spin }} 50 50)">
+          <circle cx="36" cy="43" r="24" />
+          <circle cx="64" cy="58" r="17" />
+        </g>
+      </svg>
+    {% endif %}
+
+    {% if turn != blank %}
+      {{
+        turn
+        | image_url: width: 600, height: 600, crop: 'center'
+        | image_tag:
+          class: 'collection-card__image collection-card__image--turn',
+          alt: '',
+          widths: '120, 160, 200, 240, 320, 400, 480, 600',
+          sizes: sizes,
+          loading: loading
+      }}
+    {% endif %}
+  </div>
 
   <div class="collection-card__content">
     {% if collection != blank %}
@@ -72,15 +138,74 @@
     text-decoration: underline;
   }
 
-  /* Squared off to match the crop the image above it is requested at */
-  .collection-card__placeholder {
+  /* The box the pictures are stacked in, squared off to match the crop they are
+     asked for and declared here rather than left to the files, so a row of
+     cards holds its height before any of them arrive. */
+  .collection-card__media {
+    position: relative;
     aspect-ratio: 1;
-    background-color: rgb(0 0 0 / 0.04);
   }
 
-  .collection-card__placeholder svg {
-    display: block;
+  .collection-card__image,
+  .collection-card__placeholder {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
+  }
+
+  .collection-card__image {
+    object-fit: cover;
+    transition: opacity 0.3s ease-out;
+  }
+
+  .collection-card__image--turn {
+    opacity: 0;
+  }
+
+  /* The turn: the second picture is faded in over the first and the first is
+     faded out from under it, because one drawn on transparent ground would
+     otherwise show both at once.
+
+     Hover is only asked for where there is a pointer to hover with. On a
+     touchscreen it sticks to the tap that opens the link, and the card would be
+     sitting turned over when the visitor came back to it. */
+  @media (hover: hover) {
+    .collection-card--turns:hover .collection-card__image--rest {
+      opacity: 0;
+    }
+
+    .collection-card--turns:hover .collection-card__image--turn {
+      opacity: 1;
+    }
+  }
+
+  /* Keyboard focus turns the card over too, so a row behaves the same however
+     it is being read. */
+  .collection-card--turns:focus-visible .collection-card__image--rest {
+    opacity: 0;
+  }
+
+  .collection-card--turns:focus-visible .collection-card__image--turn {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .collection-card__image {
+      transition-duration: 0s;
+    }
+  }
+
+  /* One hue in three tones from two shapes: a pair of circles laid over the
+     disc, half transparent, so where they overlap is darker than either. Two
+     of them rather than a ring or an arc, which at this size would read as a
+     picture still loading. */
+  .collection-card__disc {
+    fill: hsl(var(--placeholder-hue, 30) 40% 93%);
+  }
+
+  .collection-card__marks circle {
+    fill: hsl(var(--placeholder-hue, 30) 42% 72%);
+    fill-opacity: 0.5;
   }
 {% endstylesheet %}

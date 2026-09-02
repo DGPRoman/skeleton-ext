@@ -12,7 +12,18 @@
   style="--grid-gap: {{ section.settings.grid_gap }}px"
 >
   {% for collection in collections %}
-    {% render 'collection-card', collection: collection, show_description: true %}
+    {% comment %}
+      Nobody picks a picture per collection on a page that lists every one of
+      them, so this is the one caller that hands the card the collection's own.
+      How wide a card lands here is a grid track the merchant sizes, so no
+      `sizes` is given and the browser is left to assume the worst.
+    {% endcomment %}
+    {% render 'collection-card',
+      collection: collection,
+      image: collection.featured_image,
+      index: forloop.index,
+      show_description: true
+    %}
   {% endfor %}
 </div>
 

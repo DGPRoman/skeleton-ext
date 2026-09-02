@@ -13,10 +13,18 @@
   {%- for block in section.blocks -%}
     {%- if block.settings.collection != blank or request.design_mode -%}
       <swiper-slide class="collection-strip__slide" {{ block.shopify_attributes }}>
-        {%- comment -%} The strip sits below the fold on every template that uses it {%- endcomment -%}
+        {%- comment -%}
+          The strip sits below the fold on every template that uses it. The
+          slide widths below are what `sizes` is worked out from: a percentage
+          of the content column, which is itself narrower than the viewport, so
+          each is an upper bound rather than a measurement.
+        {%- endcomment -%}
         {%- render 'collection-card',
           collection: block.settings.collection,
           image: block.settings.image,
+          image_hover: block.settings.image_hover,
+          index: forloop.index,
+          sizes: '(min-width: 1200px) 16vw, (min-width: 750px) 24vw, 40vw',
           loading: 'lazy'
         -%}
       </swiper-slide>
@@ -134,7 +142,8 @@
       "name": "t:general.category",
       "settings": [
         {"type": "collection", "id": "collection", "label": "t:general.collection"},
-        {"type": "image_picker", "id": "image", "label": "t:labels.image", "info": "t:info.collection_image"}
+        {"type": "image_picker", "id": "image", "label": "t:labels.image"},
+        {"type": "image_picker", "id": "image_hover", "label": "t:labels.image_hover", "info": "t:info.image_hover"}
       ]
     }
   ],

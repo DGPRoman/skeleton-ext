@@ -165,6 +165,12 @@ body {
   }
 }
 
+/* One shape at both breakpoints, for a box that is a half rather than a whole:
+   two of these side by side are as tall as one wide banner. */
+.banner--square {
+  --banner-ratio: 1 / 1;
+}
+
 /* No shape at all: the picture keeps its own proportions and nothing is cut */
 .banner--adapt .image-cover,
 .banner--adapt .image-cover img,

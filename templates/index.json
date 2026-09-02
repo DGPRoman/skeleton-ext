@@ -97,12 +97,130 @@
       "settings": {
         "heading": "Shop by category"
       }
+    },
+    "split_banners_Rt4pZv": {
+      "type": "split-banners",
+      "name": "t:general.split_banners",
+      "blocks": {
+        "tile_c1": {
+          "type": "tile",
+          "settings": {
+            "image": "shopify://shop_images/hero-desktop-1.jpg",
+            "image_mobile": "shopify://shop_images/hero-mobile-1.jpg",
+            "alt": "Summer fragrances",
+            "link": "shopify://collections/frontpage",
+            "heading": "",
+            "heading_color": "#ffffff",
+            "alignment": "left",
+            "position": "end"
+          }
+        },
+        "tile_c2": {
+          "type": "tile",
+          "settings": {
+            "image": "shopify://shop_images/hero-desktop-1.jpg",
+            "image_mobile": "shopify://shop_images/hero-mobile-1.jpg",
+            "alt": "",
+            "link": "shopify://collections/hydrogen",
+            "heading": "New arrivals",
+            "heading_color": "#ffffff",
+            "alignment": "left",
+            "position": "end"
+          }
+        }
+      },
+      "block_order": ["tile_c1", "tile_c2"],
+      "settings": {
+        "columns_mobile": "1",
+        "gap": 0
+      }
+    },
+    "split_banners_Kp8mQx": {
+      "type": "split-banners",
+      "name": "t:general.split_banners",
+      "blocks": {
+        "promo_c1": {
+          "type": "promo",
+          "settings": {
+            "products": [
+              "the-complete-snowboard",
+              "the-collection-snowboard-hydrogen",
+              "the-collection-snowboard-liquid",
+              "the-collection-snowboard-oxygen",
+              "the-multi-location-snowboard"
+            ],
+            "heading": "Staff picks",
+            "background": "#ffb6ac",
+            "foreground": "#333333",
+            "autoplay": true,
+            "interval": 5
+          }
+        },
+        "tile_c3": {
+          "type": "tile",
+          "settings": {
+            "image": "shopify://shop_images/hero-desktop-1.jpg",
+            "image_mobile": "shopify://shop_images/hero-mobile-1.jpg",
+            "alt": "",
+            "link": "shopify://collections/automated-collection",
+            "heading": "Gift sets",
+            "heading_color": "#ffffff",
+            "alignment": "center",
+            "position": "center"
+          }
+        }
+      },
+      "block_order": ["promo_c1", "tile_c3"],
+      "settings": {
+        "columns_mobile": "1",
+        "gap": 0
+      }
+    },
+    "split_banners_Wz2nHc": {
+      "type": "split-banners",
+      "name": "t:general.split_banners",
+      "blocks": {
+        "tile_c4": {
+          "type": "tile",
+          "settings": {
+            "image": "shopify://shop_images/hero-desktop-1.jpg",
+            "image_mobile": "shopify://shop_images/hero-mobile-1.jpg",
+            "alt": "Skincare",
+            "link": "shopify://collections/frontpage",
+            "heading": "",
+            "heading_color": "#ffffff",
+            "alignment": "left",
+            "position": "end"
+          }
+        },
+        "tile_c5": {
+          "type": "tile",
+          "settings": {
+            "image": "shopify://shop_images/hero-desktop-1.jpg",
+            "image_mobile": "shopify://shop_images/hero-mobile-1.jpg",
+            "alt": "",
+            "link": "shopify://collections/hydrogen",
+            "heading": "Best sellers",
+            "heading_color": "#ffffff",
+            "alignment": "right",
+            "position": "start"
+          }
+        }
+      },
+      "block_order": ["tile_c4", "tile_c5"],
+      "settings": {
+        "columns_mobile": "1",
+        "gap": 0
+      }
     }
   },
   "order": [
     "hero_banner_JEctQn",
     "collections_cYLt9E",
     "slideshow_wK3mNp",
+    "split_banners_Rt4pZv",
+    "split_banners_Kp8mQx",
+    "split_banners_Wz2nHc",
     "collection_strip_hQ7vLt"
   ]
 }
